@@ -3,101 +3,115 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
 <title>Въжена органиграма</title>
 <style>
 :root {
-  --brass: #d6aa5c; --brass-d: #8a6a2c; --ui: rgba(24,17,12,.88); --ui-ink: #f3e6cc; --ui-line: rgba(214,170,92,.28);
-  --serif: 'Palatino Linotype','Book Antiqua',Palatino,Georgia,serif;
-  --sans: 'Segoe UI',system-ui,-apple-system,Roboto,sans-serif;
+  --bg: #fff; --ink: #0a1a33; --mist: #45556a; --ash: #6b7a8c; --accent: #0a6cff; --teal: #00b4e6; --radius: 24px;
+  --line: rgba(10,26,51,.14);
+  --font: 'Noto Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --ui: rgba(255,255,255,.88); --ui-ink: #0a1a33;
 }
-body[data-bg=wood]   { --card:#efe3cc; --ink:#2b1d12; --sub:#6a563f; --edge:#bfa77c; --vig:rgba(0,0,0,.55); }
-body[data-bg=canvas] { --card:#fdfcf8; --ink:#1f242b; --sub:#586270; --edge:#c9c6b9; --vig:rgba(60,50,30,.22); }
-body[data-bg=map]    { --card:#152e38; --ink:#e8f4f0; --sub:#8db4b0; --edge:#2f5a67; --vig:rgba(0,0,0,.6); }
+body[data-bg=light] { --card:#ffffff; --nink:#0a1a33; --sub:#45556a; --edge:rgba(10,26,51,.14); --veil:rgba(255,255,255,.75); --shadow:rgba(10,26,51,.30); --brand:#6b7a8c; }
+body[data-bg=mist]  { --card:#ffffff; --nink:#0a1a33; --sub:#45556a; --edge:rgba(10,108,255,.22); --veil:rgba(234,242,255,.8); --shadow:rgba(10,60,160,.32); --brand:#45556a; }
+body[data-bg=night] { --card:#10284a; --nink:#eef4ff; --sub:#9db3d1; --edge:rgba(120,170,255,.25); --veil:rgba(4,12,26,.75); --shadow:rgba(0,0,0,.55); --brand:#9db3d1; }
 * { box-sizing: border-box; }
-html, body { margin: 0; height: 100%; overflow: hidden; font-family: var(--sans); background:#1b130d; }
-#vp { position: fixed; inset: 0; overflow: hidden; touch-action: none; cursor: grab; background-color:#3a2518; user-select: none; -webkit-user-select: none; }
+html, body { margin: 0; height: 100%; overflow: hidden; font-family: var(--font); background:#fff; -webkit-font-smoothing: antialiased; }
+::selection { background: var(--accent); color: #fff; }
+#vp { position: fixed; inset: 0; overflow: hidden; touch-action: none; cursor: grab; background-color:#fff; user-select: none; -webkit-user-select: none; }
 #vp.panning { cursor: grabbing; }
-#vig { position: fixed; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 50% 45%, transparent 45%, var(--vig) 100%); z-index: 2; }
+#vig { position: fixed; inset: 0; pointer-events: none; background: radial-gradient(120% 90% at 50% 45%, transparent 40%, var(--veil) 100%); z-index: 2; }
+#brand { position: fixed; left: 24px; top: 20px; z-index: 6; display: flex; align-items: center; gap: 12px; pointer-events: none; }
+#brand img { height: 26px; display: block; }
+#brand i { width: 1px; height: 18px; background: var(--line); }
+#brand span { font-size: 13px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--brand); }
+body[data-bg=night] #brand img { filter: brightness(0) invert(1); }
 #world { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
 #ropes { position: absolute; inset: 0; pointer-events: none; z-index: 3; }
 
-.node { position: absolute; left: 0; top: 0; width: 196px; transform-origin: 0 0; background: var(--card); color: var(--ink);
-  border: 1px solid var(--edge); border-radius: 6px 6px 12px 12px; padding: 11px 14px 12px 21px; cursor: grab;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.35), 0 2px 3px rgba(0,0,0,.35), 0 10px 20px rgba(0,0,0,.28); will-change: transform; }
-.node::before { content:""; position:absolute; left:0; top:0; bottom:0; width:8px; background:var(--c,#b5483a); border-radius:5px 0 0 11px; }
-.node.drag { box-shadow: inset 0 1px 0 rgba(255,255,255,.35), 0 4px 6px rgba(0,0,0,.35), 0 22px 34px rgba(0,0,0,.4); cursor: grabbing; }
-.node.sel { outline: 2px solid var(--brass); outline-offset: 3px; }
-.node.target { outline: 2px dashed var(--brass); outline-offset: 5px; }
+.node { position: absolute; left: 0; top: 0; width: 200px; transform-origin: 0 0; background: var(--card); color: var(--nink);
+  border: 1px solid var(--edge); border-radius: 20px; padding: 14px 16px 15px; cursor: grab;
+  box-shadow: 0 1px 0 rgba(255,255,255,.6) inset, 0 24px 40px -22px var(--shadow), 0 3px 10px -4px var(--shadow); will-change: transform; }
+.node::before { content:""; position:absolute; left:18px; right:18px; top:-1px; height:3px; background:var(--c,#0a6cff); border-radius: 0 0 3px 3px; }
+.node.drag { box-shadow: 0 1px 0 rgba(255,255,255,.6) inset, 0 40px 60px -26px var(--shadow), 0 8px 18px -6px var(--shadow); cursor: grabbing; }
+.node.sel { box-shadow: 0 0 0 3px rgba(10,108,255,.28), 0 24px 40px -22px var(--shadow); border-color: var(--accent); }
+.node.target { box-shadow: 0 0 0 4px rgba(0,180,230,.4), 0 24px 40px -22px var(--shadow); border-color: var(--teal); }
 .node.gone { pointer-events: none; }
-.head { display: flex; gap: 9px; align-items: center; }
-.ico { flex: none; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-size: 18px; line-height: 1;
-  background: color-mix(in srgb, var(--c,#b5483a) 20%, transparent); background-size: cover; background-position: center; }
+.head { display: flex; gap: 11px; align-items: center; }
+.ico { flex: none; width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; font-size: 18px; line-height: 1;
+  background: color-mix(in srgb, var(--c,#0a6cff) 14%, transparent); background-size: cover; background-position: center; }
 .f { outline: none; overflow-wrap: anywhere; white-space: pre-wrap; min-width: 0; }
-.title { font: 700 16px/1.2 var(--serif); }
-.name { font-size: 13px; color: var(--sub); margin-top: 7px; }
-.note { font-size: 12px; line-height: 1.35; color: var(--sub); margin-top: 7px; padding-top: 7px; border-top: 1px dashed var(--edge); }
+.title { font-size: 17px; font-weight: 500; letter-spacing: -0.02em; line-height: 1.2; }
+.name { font-size: 13px; font-weight: 300; color: var(--sub); margin-top: 9px; line-height: 1.4; }
+.note { font-size: 12px; font-weight: 300; line-height: 1.45; color: var(--sub); margin-top: 9px; padding-top: 9px; border-top: 1px solid var(--edge); }
 .node:not(.editing) .f:empty { display: none; }
 .node:not(.editing) .title:empty { display: block; } .node:not(.editing) .title:empty::before { content: 'Без име'; opacity: .45; }
 .editing { cursor: text; }
 .editing .f:empty::before { content: attr(data-ph); opacity: .45; }
-.editing .f { border-radius: 3px; box-shadow: 0 0 0 1px var(--edge); padding: 1px 3px; margin-left: -3px; margin-right: -3px; }
-.editing .f:focus { box-shadow: 0 0 0 2px var(--brass); }
+.editing .f { border-radius: 6px; box-shadow: 0 0 0 1px var(--edge); padding: 1px 4px; margin-left: -4px; margin-right: -4px; }
+.editing .f:focus { box-shadow: 0 0 0 2px var(--accent); }
 
 .port { position: absolute; width: 14px; height: 14px; border-radius: 50%; cursor: crosshair; z-index: 2;
-  background: radial-gradient(circle at 35% 30%, #f3d58f, var(--brass) 55%, var(--brass-d)); border: 2px solid rgba(40,25,10,.7);
-  opacity: .0; transition: opacity .15s, transform .15s; }
+  background: #fff; border: 3px solid var(--accent); box-shadow: 0 0 10px rgba(10,108,255,.55);
+  opacity: 0; transition: opacity .2s, transform .2s; }
 .node:hover .port, .node.sel .port, body.linking .port { opacity: 1; }
-.port:hover { transform: scale(1.35); }
+.port:hover { transform: scale(1.35); background: var(--accent); }
 .p0 { left: calc(50% - 7px); top: -7px; } .p1 { right: -7px; top: calc(50% - 7px); }
 .p2 { left: calc(50% - 7px); bottom: -7px; } .p3 { left: -7px; top: calc(50% - 7px); }
-.badge { position: absolute; right: 10px; bottom: -12px; height: 22px; min-width: 38px; padding: 0 8px; border-radius: 11px; z-index: 3;
-  font: 700 12px var(--sans); cursor: pointer; border: 1px solid var(--brass-d); background: #2a1c11; color: var(--ui-ink); display: none; }
+.badge { position: absolute; right: 14px; bottom: -13px; height: 26px; min-width: 42px; padding: 0 11px; border-radius: 13px; z-index: 3;
+  font: 600 12px var(--font); letter-spacing: .04em; cursor: pointer; border: 1px solid var(--accent); background: #fff; color: var(--accent); display: none;
+  transition: box-shadow .3s, background .3s; }
+.badge:hover { box-shadow: 0 8px 20px -6px rgba(10,108,255,.55); }
 .badge.on { display: block; }
-.badge.closed { background: var(--brass); color: #2a1c11; }
+.badge.closed { background: var(--accent); color: #fff; }
 
-.marquee { position: fixed; border: 1px solid var(--brass); background: rgba(214,170,92,.12); z-index: 5; pointer-events: none; display: none; }
+.marquee { position: fixed; border: 1px solid var(--accent); background: rgba(10,108,255,.08); border-radius: 8px; z-index: 5; pointer-events: none; display: none; }
 
-#bar { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); z-index: 10; display: flex; align-items: center; gap: 4px; padding: 6px;
-  max-width: calc(100% - 24px); overflow-x: auto; background: var(--ui); color: var(--ui-ink); border: 1px solid var(--ui-line); border-radius: 16px;
-  backdrop-filter: blur(10px); box-shadow: 0 12px 32px rgba(0,0,0,.45); }
-#bar button, .tbtn { font: 600 14px var(--sans); height: 38px; min-width: 38px; padding: 0 12px; border-radius: 10px; border: 0; background: transparent; color: inherit; cursor: pointer; white-space: nowrap; }
-#bar button:hover:not(:disabled), .tbtn:hover { background: rgba(255,255,255,.1); }
+#bar { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); z-index: 10; display: flex; align-items: center; gap: 4px; padding: 7px;
+  max-width: calc(100% - 24px); overflow-x: auto; background: var(--ui); color: var(--ui-ink); border: 1px solid var(--line); border-radius: var(--radius);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 24px 60px -20px rgba(10,26,51,.45); scrollbar-width: none; }
+#bar button, .tbtn { font: 600 12px var(--font); letter-spacing: .08em; text-transform: uppercase; height: 40px; min-width: 40px; padding: 0 15px; border-radius: 9999px; border: 0; background: transparent; color: var(--ash); cursor: pointer; white-space: nowrap; transition: color .3s, background .3s, box-shadow .4s, transform .4s; }
+#bar button:hover:not(:disabled), .tbtn:hover { color: var(--ink); background: rgba(10,108,255,.08); }
 #bar button:disabled { opacity: .35; cursor: default; }
-#bar button.primary { background: var(--brass); color: #2a1a0b; padding: 0 16px; }
-#bar button.primary:hover { background: #e6bd72; }
-#bar .sep { width: 1px; height: 22px; background: var(--ui-line); margin: 0 4px; flex: none; }
-#bar .bgb { width: 30px; height: 30px; min-width: 30px; padding: 0; border-radius: 50%; border: 2px solid transparent; }
-#bar .bgb.on { border-color: var(--brass); }
-button:focus-visible, .sw:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+#bar button.primary { background: var(--accent); color: #fff; padding: 0 22px; border-radius: var(--radius); }
+#bar button.primary:hover { background: var(--accent); color: #fff; box-shadow: 0 10px 30px -6px rgba(10,108,255,.55); transform: translateY(-1px); }
+#bar .sep { width: 1px; height: 20px; background: var(--line); margin: 0 5px; flex: none; }
+#bar .bgb { width: 30px; height: 30px; min-width: 30px; padding: 0; border-radius: 50%; border: 2px solid rgba(10,26,51,.12); }
+#bar .bgb.on { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(10,108,255,.15); }
+button:focus-visible, .sw:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-#nbar, #rmenu, #help { position: fixed; z-index: 9; display: none; background: var(--ui); color: var(--ui-ink); border: 1px solid var(--ui-line);
-  border-radius: 12px; padding: 6px; backdrop-filter: blur(10px); box-shadow: 0 10px 26px rgba(0,0,0,.4); }
+#nbar, #rmenu, #help { position: fixed; z-index: 9; display: none; background: rgba(255,255,255,.94); color: var(--ink); border: 1px solid var(--line);
+  border-radius: 18px; padding: 7px; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 24px 60px -20px rgba(10,26,51,.45); }
 #nbar { gap: 4px; align-items: center; transform: translate(-50%, -100%); }
-.sw { width: 20px; height: 20px; border-radius: 50%; border: 2px solid rgba(255,255,255,.35); cursor: pointer; padding: 0; flex: none; }
-.sw.on { border-color: #fff; }
-#iconmenu { position: absolute; left: 0; top: calc(100% + 6px); display: none; grid-template-columns: repeat(6, 1fr); gap: 2px; padding: 6px; background: var(--ui); border: 1px solid var(--ui-line); border-radius: 12px; }
+.sw { width: 20px; height: 20px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(10,26,51,.18); cursor: pointer; padding: 0; flex: none; }
+.sw.on { box-shadow: 0 0 0 2px var(--accent); }
+#iconmenu { position: absolute; left: 0; top: calc(100% + 6px); display: none; grid-template-columns: repeat(6, 1fr); gap: 2px; padding: 7px; background: rgba(255,255,255,.96); border: 1px solid var(--line); border-radius: 18px; box-shadow: 0 24px 60px -20px rgba(10,26,51,.45); }
 #iconmenu.on { display: grid; }
-#iconmenu button { height: 34px; width: 34px; font-size: 18px; border: 0; background: transparent; border-radius: 8px; cursor: pointer; }
-#iconmenu button:hover { background: rgba(255,255,255,.12); }
-#nbar .tbtn { height: 30px; min-width: 30px; padding: 0 8px; font-size: 13px; }
-#rmenu { width: 190px; }
-#rmenu .row { display: flex; align-items: center; gap: 8px; width: 100%; padding: 7px 8px; border: 0; background: transparent; color: inherit; font: 14px var(--sans); border-radius: 8px; cursor: pointer; text-align: left; }
-#rmenu .row:hover { background: rgba(255,255,255,.1); }
+#iconmenu button { height: 34px; width: 34px; font-size: 18px; border: 0; background: transparent; border-radius: 10px; cursor: pointer; }
+#iconmenu button:hover { background: rgba(10,108,255,.1); }
+#nbar .tbtn { height: 32px; min-width: 32px; padding: 0 12px; font-size: 11px; }
+#nbar #nDel:hover { color: #d92d20; background: rgba(217,45,32,.08); }
+#rmenu { width: 210px; }
+#rmenu .row { display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 10px; border: 0; background: transparent; color: var(--ink); font: 400 14px var(--font); border-radius: 12px; cursor: pointer; text-align: left; }
+#rmenu .row:hover { background: rgba(10,108,255,.08); }
 #rmenu .chip { width: 38px; height: 8px; border-radius: 4px; flex: none; }
-#rmenu .del { color: #ff9c8f; }
-#help { left: 50%; bottom: 76px; transform: translateX(-50%); width: min(420px, calc(100% - 24px)); padding: 14px 16px; font-size: 13.5px; line-height: 1.5; }
-#help h3 { margin: 0 0 6px; font: 700 16px var(--serif); }
+#rmenu .del { color: #d92d20; }
+#help { left: 50%; bottom: 86px; transform: translateX(-50%); width: min(440px, calc(100% - 24px)); padding: 20px 22px; font-size: 14px; font-weight: 300; line-height: 1.6; color: var(--mist); }
+#help h3 { margin: 0 0 8px; font-size: 22px; font-weight: 400; letter-spacing: -0.02em; color: var(--ink); }
 #help ul { margin: 0; padding-left: 18px; }
+#help li { margin-bottom: 4px; }
 </style>
 </head>
-<body data-bg="wood">
+<body data-bg="light">
 <div id="vp"><div id="world"></div><canvas id="ropes"></canvas></div>
 <div id="vig"></div>
+<div id="brand"><img src="data:image/png;base64,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" alt="BTL"><i></i><span>Органиграма</span></div>
 <div class="marquee" id="mq"></div>
 
 <div id="nbar" role="toolbar" aria-label="Настройки на звеното">
   <div id="swatches" style="display:flex;gap:5px;padding:0 4px"></div>
-  <button class="tbtn" id="nIcon" title="Икона">☺</button>
+  <button class="tbtn" id="nIcon" title="Икона">Икона</button>
   <button class="tbtn" id="nPhoto" title="Снимка">Снимка</button>
   <button class="tbtn" id="nDel" title="Изтрий звеното (Delete)">Изтрий</button>
   <div id="iconmenu"></div>
@@ -106,7 +120,7 @@ button:focus-visible, .sw:focus-visible { outline: 2px solid var(--brass); outli
 <div id="help">
   <h3>Как се работи</h3>
   <ul>
-    <li>Влачи от златна точка на звено до друго звено, за да вържеш въже. Първото е родител, второто е подчинено.</li>
+    <li>Влачи от синя точка на звено до друго звено, за да вържеш въже. Първото е родител, второто е подчинено.</li>
     <li>Двоен клик върху звено го редактира. Двоен клик върху празно място добавя ново.</li>
     <li>Клик върху въже: смяна на стила или изтриване.</li>
     <li>Значката най-долу на звеното скрива или показва клона му.</li>
@@ -123,9 +137,9 @@ button:focus-visible, .sw:focus-visible { outline: 2px solid var(--brass); outli
   <button id="undo" title="Назад (Ctrl+Z)" aria-label="Назад">↶</button>
   <button id="redo" title="Напред (Ctrl+Y)" aria-label="Напред">↷</button>
   <span class="sep"></span>
-  <button class="bgb" data-bg="wood" title="Тъмно дърво" aria-label="Тъмно дърво" style="background:linear-gradient(90deg,#4a2f1d,#5a3a24 50%,#3f281a)"></button>
-  <button class="bgb" data-bg="canvas" title="Платно" aria-label="Платно" style="background:#d4d0c3"></button>
-  <button class="bgb" data-bg="map" title="Тъмна карта" aria-label="Тъмна карта" style="background:radial-gradient(circle,#2c5560,#0b1820)"></button>
+  <button class="bgb" data-bg="light" title="Светло" aria-label="Светло" style="background:#fff"></button>
+  <button class="bgb" data-bg="mist" title="Синя мъгла" aria-label="Синя мъгла" style="background:linear-gradient(135deg,#cfe1ff,#fff)"></button>
+  <button class="bgb" data-bg="night" title="Нощ" aria-label="Нощ" style="background:radial-gradient(circle at 30% 30%,#0a6cff,#0a1a33 70%)"></button>
   <span class="sep"></span>
   <button id="exp" title="Свали като JSON">Запази</button>
   <button id="imp" title="Зареди от JSON">Зареди</button>
@@ -140,22 +154,23 @@ button:focus-visible, .sw:focus-visible { outline: 2px solid var(--brass); outli
 const $ = (s) => document.querySelector(s);
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const uid = () => Math.random().toString(36).slice(2, 8);
-const NW = 196;
-const COLORS = ['#b5483a', '#c98a2b', '#5f8a4e', '#2f7f86', '#4a5f9a', '#7a4d86', '#4a4640'];
+const NW = 200;
+const COLORS = ['#0a6cff', '#00b4e6', '#6d5dfc', '#12b886', '#f59f00', '#e8590c', '#0a1a33'];
 const ICONS = ['👤','🏢','⚙️','💼','📣','🧪','🛠️','📦','💰','🎯','🧭','⚓'];
 const ROPES = {
-  hemp: { n: 'Коноп',  base: '#85653a', hi: '#d6b87f', w: 7 },
-  tar:  { n: 'Катран', base: '#14100d', hi: '#52463c', w: 6.5 },
-  red:  { n: 'Червено', base: '#6e1a18', hi: '#d2605a', w: 6.5 },
-  blue: { n: 'Синьо',  base: '#1b3a58', hi: '#6296c8', w: 6.5 },
-  cord: { n: 'Тънък шнур', base: '#85653a', hi: '#d6b87f', w: 3.4 },
+  blue:  { n: 'Синьо',        base: '#0a4fc0', hi: '#6fa8ff', w: 6.5 },
+  navy:  { n: 'Тъмно синьо',  base: '#07132a', hi: '#3a5a8c', w: 6.5 },
+  teal:  { n: 'Тюркоаз',      base: '#0087ad', hi: '#6fdcf5', w: 6.5 },
+  silver:{ n: 'Сребро',       base: '#8d9bb0', hi: '#eef3fa', w: 6.5 },
+  hemp:  { n: 'Коноп',        base: '#85653a', hi: '#d6b87f', w: 7 },
+  cord:  { n: 'Тънък шнур',   base: '#0a4fc0', hi: '#6fa8ff', w: 3.4 },
 };
-const KEY = 'ropechart.v1';
+const KEY = 'ropechart.v2';
 
 /* ---------- модел ---------- */
 let S = { nodes: [], edges: [], collapsed: [] };
 let view = { x: 0, y: 0, z: 1 };
-let bg = 'wood';
+let bg = 'light';
 let sel = new Set();
 let selRope = null;
 const rt = new Map();     // id -> runtime на звено
@@ -187,42 +202,24 @@ function mkNoise(cu, cv2, seed) {
 const texCache = {};
 function texture(kind) {
   if (texCache[kind]) return texCache[kind];
-  const T = kind === 'wood' ? 512 : kind === 'map' ? 600 : 256;
-  const c = document.createElement('canvas'); c.width = c.height = T;
-  const g = c.getContext('2d'), im = g.createImageData(T, T), d = im.data;
-  const put = (x, y, r, gg, b) => { const i = (y * T + x) * 4; d[i] = r; d[i+1] = gg; d[i+2] = b; d[i+3] = 255; };
-  if (kind === 'wood') {
-    const n1 = mkNoise(64, 4, 7), n2 = mkNoise(8, 2, 3), n3 = mkNoise(32, 8, 11), pr = rng(9);
-    const shade = [0.95, 1.08, 0.86, 1.02].map((v) => v * (0.95 + pr() * 0.1));
-    for (let y = 0; y < T; y++) for (let x = 0; x < T; x++) {
-      const k = x >> 7, xin = x & 127, e = Math.min(xin, 127 - xin);
-      const grain = 0.5 * n1(x / 8, y / 128) + 0.3 * n3(x / 16, y / 64) + 0.2 * n2(x / 64, y / 256);
-      const ring = 0.5 + 0.5 * Math.sin(x * 6.2832 * 18 / T + n2(x / 64, y / 256) * 9 + k * 2);
-      let m = shade[k] * (0.6 + 0.55 * grain + 0.14 * ring);
-      if (e < 2) m *= 0.4 + 0.2 * e; else if (e < 7) m *= 0.88 + 0.017 * e;
-      put(x, y, 80 * m, 51 * m, 33 * m);
-    }
-  } else if (kind === 'canvas') {
-    const r = rng(21), row = Float32Array.from({ length: T }, r), col = Float32Array.from({ length: T }, r), mott = mkNoise(8, 8, 2);
-    for (let y = 0; y < T; y++) for (let x = 0; x < T; x++) {
-      const v = 1 + 0.09 * (row[y] - .5) + 0.09 * (col[x] - .5) + (((x + y) & 1) ? 0.03 : -0.03) + 0.1 * (mott(x / 32, y / 32) - .5);
-      put(x, y, 208 * v, 205 * v, 192 * v);
-    }
-  } else {
-    const P = 6.2832 / T;
-    const f = (x, y) => Math.sin(P * (x + 2 * y) + 1) * .9 + Math.sin(P * (3 * x - y) + 2) * .6 + Math.sin(P * (2 * x + 3 * y) + 4) * .5
-      + Math.sin(P * (5 * x - 4 * y) + .5) * .28 + Math.sin(P * (4 * x + 5 * y) + 2.2) * .2;
-    const L = 3.4, r = rng(4);
-    for (let y = 0; y < T; y++) for (let x = 0; x < T; x++) {
-      const v = f(x, y), gx = f(x + 1, y) - v, gy = f(x, y + 1) - v, grad = Math.hypot(gx, gy) * L + 1e-4;
-      const lv = v * L, fr = lv - Math.floor(lv), dist = Math.min(fr, 1 - fr) / grad;
-      const a = clamp(1 - (dist - 0.35) / 0.9, 0, 1), major = (((Math.floor(lv) % 5) + 5) % 5) === 0;
-      const k = a * (major ? 0.55 : 0.26), n = (r() - .5) * 3;
-      put(x, y, 11 + 90 * k + n, 25 + 175 * k + n, 33 + 165 * k + n);
+  const T = 640, c = document.createElement('canvas'); c.width = c.height = T;
+  const g = c.getContext('2d'), r = rng(kind === 'night' ? 5 : kind === 'mist' ? 8 : 3);
+  const base = { light: ['#ffffff', '#ffffff'], mist: ['#eef4ff', '#dbe8ff'], night: ['#0c2144', '#06122a'] }[kind];
+  g.fillStyle = base[0]; g.fillRect(0, 0, T, T);
+  const cols = kind === 'night' ? ['10,108,255', '0,180,230', '160,200,255'] : ['10,108,255', '0,180,230', '10,108,255'];
+  const dots = kind === 'night' ? 150 : 110;
+  for (let i = 0; i < dots; i++) {
+    const x = r() * T, y = r() * T, rad = 1 + Math.pow(r(), 3) * (kind === 'night' ? 5 : 4), col = cols[Math.floor(r() * cols.length)];
+    const a = (kind === 'night' ? 0.35 : 0.12) + r() * 0.3;
+    for (const dx of [-T, 0, T]) for (const dy of [-T, 0, T]) {
+      const px = x + dx, py = y + dy; if (px < -20 || py < -20 || px > T + 20 || py > T + 20) continue;
+      const gg = g.createRadialGradient(px, py, 0, px, py, rad * 4);
+      gg.addColorStop(0, 'rgba(' + col + ',' + a + ')'); gg.addColorStop(0.25, 'rgba(' + col + ',' + a * 0.5 + ')'); gg.addColorStop(1, 'rgba(' + col + ',0)');
+      g.fillStyle = gg; g.beginPath(); g.arc(px, py, rad * 4, 0, 6.2832); g.fill();
+      g.fillStyle = 'rgba(' + col + ',' + Math.min(1, a + 0.25) + ')'; g.beginPath(); g.arc(px, py, rad * 0.55, 0, 6.2832); g.fill();
     }
   }
-  g.putImageData(im, 0, 0);
-  return (texCache[kind] = { url: c.toDataURL('image/jpeg', .92), T });
+  return (texCache[kind] = { url: c.toDataURL('image/png'), T });
 }
 function applyBg() {
   document.body.dataset.bg = bg;
@@ -275,7 +272,7 @@ function render() {
     el.classList.toggle('sel', sel.has(n.id));
     if (!el.classList.contains('editing')) for (const f of ['title', 'name', 'note']) { const t = el.querySelector('[data-f=' + f + ']'); if (t.textContent !== (n[f] || '')) t.textContent = n[f] || ''; }
     const ico = el.querySelector('.ico');
-    ico.style.backgroundImage = n.photo ? `url(${n.photo})` : ''; ico.textContent = n.photo ? '' : (n.icon || '👤');
+    ico.style.backgroundImage = n.photo ? `url(${n.photo})` : ''; ico.textContent = n.photo ? '' : (n.icon || ''); ico.style.display = (n.photo || n.icon) ? '' : 'none';
     const b = el.querySelector('.badge'), cnt = descN.get(n.id);
     b.classList.toggle('on', !!cnt); const closed = S.collapsed.includes(n.id);
     b.classList.toggle('closed', closed); b.textContent = cnt ? (closed ? '+' + cnt : '− ' + cnt) : '';
@@ -301,7 +298,7 @@ function saveSoon() { clearTimeout(saveT); saveT = setTimeout(() => { try { loca
 
 /* ---------- въже (Verlet) ---------- */
 const NP = 20;
-function newRope(style) { return { pts: Array.from({ length: NP }, () => ({ x: 0, y: 0, px: 0, py: 0 })), L: 0, init: false, style: style || 'hemp' }; }
+function newRope(style) { return { pts: Array.from({ length: NP }, () => ({ x: 0, y: 0, px: 0, py: 0 })), L: 0, init: false, style: style || 'blue' }; }
 function lineRope(r, A, B) {
   const d = Math.hypot(B.x - A.x, B.y - A.y);
   r.pts.forEach((p, i) => { const t = i / (NP - 1); p.x = p.px = A.x + (B.x - A.x) * t; p.y = p.py = A.y + (B.y - A.y) * t; });
@@ -332,8 +329,8 @@ function drawRope(r, alpha, ws, glow) {
     ctx.lineTo(p[NP-1].x, p[NP-1].y);
   };
   ctx.globalAlpha = alpha; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-  if (glow) { path(); ctx.strokeStyle = 'rgba(214,170,92,.55)'; ctx.lineWidth = w + 9; ctx.stroke(); }
-  ctx.save(); ctx.translate(4, 8); path(); ctx.strokeStyle = 'rgba(0,0,0,.3)'; ctx.lineWidth = w + 2; ctx.stroke(); ctx.restore();
+  if (glow) { path(); ctx.strokeStyle = 'rgba(10,108,255,.35)'; ctx.lineWidth = w + 9; ctx.stroke(); }
+  ctx.save(); ctx.translate(4, 8); path(); ctx.strokeStyle = (bg === 'night' ? 'rgba(0,0,0,.45)' : 'rgba(10,26,51,.13)'); ctx.lineWidth = w + 2; ctx.stroke(); ctx.restore();
   path(); ctx.strokeStyle = st.base; ctx.lineWidth = w; ctx.stroke();
   path(); ctx.strokeStyle = st.hi; ctx.lineWidth = w * 0.5; ctx.globalAlpha = alpha * 0.85; ctx.stroke(); ctx.globalAlpha = alpha;
   // усукване: коси чертички по дължината
@@ -348,7 +345,7 @@ function drawRope(r, alpha, ws, glow) {
       carry = s + step - l;
     }
   }
-  ctx.strokeStyle = 'rgba(0,0,0,.38)'; ctx.lineWidth = Math.max(.8, w * 0.16); ctx.stroke();
+  ctx.strokeStyle = 'rgba(0,10,40,.38)'; ctx.lineWidth = Math.max(.8, w * 0.16); ctx.stroke();
   for (const q of [p[0], p[NP-1]]) { // възли
     const g = ctx.createRadialGradient(q.x - w * .3, q.y - w * .3, w * .1, q.x, q.y, w * 1.05);
     g.addColorStop(0, st.hi); g.addColorStop(1, st.base);
@@ -446,7 +443,7 @@ function placeBar() {
   COLORS.forEach((c) => { const b = document.createElement('button'); b.className = 'sw'; b.style.background = c; b.dataset.c = c; b.setAttribute('aria-label', 'Цвят ' + c); sw.appendChild(b); });
   sw.addEventListener('click', (e) => { const b = e.target.closest('.sw'); if (!b) return; const n = nodeById([...sel][0]); if (!n) return; n.color = b.dataset.c; reindex(); commit(); });
   const im = $('#iconmenu');
-  ICONS.forEach((ic) => { const b = document.createElement('button'); b.textContent = ic; b.dataset.i = ic; im.appendChild(b); });
+  ['', ...ICONS].forEach((ic) => { const b = document.createElement('button'); b.textContent = ic || '✕'; b.title = ic ? '' : 'Без икона'; b.dataset.i = ic; im.appendChild(b); });
   im.addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; const n = nodeById([...sel][0]); n.icon = b.dataset.i; n.photo = ''; im.classList.remove('on'); reindex(); commit(); });
   $('#nIcon').onclick = () => im.classList.toggle('on');
   $('#nPhoto').onclick = () => $('#filePhoto').click();
@@ -463,7 +460,7 @@ function placeBar() {
 /* ---------- действия ---------- */
 function toWorld(cx, cy) { return { x: (cx - view.x) / view.z, y: (cy - view.y) / view.z }; }
 function addNode(x, y, edit) {
-  const n = { id: uid(), x, y, title: '', name: '', note: '', color: COLORS[S.nodes.length % COLORS.length], icon: ICONS[S.nodes.length % ICONS.length], photo: '' };
+  const n = { id: uid(), x, y, title: '', name: '', note: '', color: COLORS[S.nodes.length % COLORS.length], icon: '', photo: '' };
   S.nodes.push(n); sel = new Set([n.id]); reindex(); commit();
   if (edit) setTimeout(() => startEdit(n.id, 'title'), 30);
   return n;
@@ -493,7 +490,7 @@ function connect(ids, target, port, cur) {
       pa = port; let best = 1e9; pb = 0;
       for (let p = 0; p < 4; p++) { const q = portPos(target, p), d = Math.hypot(q.x - cur.x, q.y - cur.y); if (d < best) { best = d; pb = p; } }
     } else [pa, pb] = autoPorts(id, target);
-    S.edges.push({ id: uid(), a: id, b: target, pa, pb, style: 'hemp' }); made++;
+    S.edges.push({ id: uid(), a: id, b: target, pa, pb, style: 'blue' }); made++;
   }
   if (made) { reindex(); commit(); }
 }
@@ -584,7 +581,7 @@ $vp.addEventListener('pointerdown', (e) => {
   if (t.closest('.port') && nodeEl) {
     e.preventDefault(); const id = nodeEl.dataset.id, port = +t.closest('.port').dataset.p;
     if (!sel.has(id)) { sel = new Set([id]); render(); }
-    link = { from: id, port, ids: sel.size > 1 ? [...sel] : [id], rope: newRope('hemp'), cur: wp };
+    link = { from: id, port, ids: sel.size > 1 ? [...sel] : [id], rope: newRope('blue'), cur: wp };
     mode = { type: 'link' }; document.body.classList.add('linking'); return;
   }
   if (nodeEl) {
@@ -670,14 +667,14 @@ $('#imp').onclick = () => $('#fileJson').click();
 $('#fileJson').onchange = (e) => {
   const f = e.target.files[0]; e.target.value = ''; if (!f) return;
   f.text().then((t) => {
-    try { const d = JSON.parse(t), s = d.S || d; if (!Array.isArray(s.nodes) || !Array.isArray(s.edges)) throw 0; S = { nodes: s.nodes, edges: s.edges, collapsed: s.collapsed || [] }; if (d.bg && texture) { bg = d.bg; applyBg(); } sel = new Set(); reindex(); commit(); fit(); }
+    try { const d = JSON.parse(t), s = d.S || d; if (!Array.isArray(s.nodes) || !Array.isArray(s.edges)) throw 0; S = { nodes: s.nodes, edges: s.edges, collapsed: s.collapsed || [] }; if (['light','mist','night'].includes(d.bg)) { bg = d.bg; applyBg(); } sel = new Set(); reindex(); commit(); fit(); }
     catch (err) { alert('Файлът не е валидна органиграма.'); }
   });
 };
 
 /* ---------- старт ---------- */
 function demo() {
-  const mk = (id, title, name, color, icon, note) => ({ id, x: 0, y: 0, title, name, note: note || '', color, icon, photo: '' });
+  const mk = (id, title, name, color, icon, note) => ({ id, x: 0, y: 0, title, name, note: note || '', color, icon: '', photo: '' });
   S = {
     nodes: [
       mk('a', 'Управление', 'Мария Георгиева, изпълнителен директор', COLORS[0], '🧭'),
@@ -691,12 +688,12 @@ function demo() {
       mk('i', 'Поддръжка', 'Калоян Начев', COLORS[2], '⚙️'),
       mk('j', 'Счетоводство', 'Весела Атанасова', COLORS[4], '🏢'),
     ],
-    edges: [['a','b'],['a','c'],['a','d'],['b','e'],['b','f'],['c','g'],['c','h'],['c','i'],['d','j']].map(([a, b]) => ({ id: uid(), a, b, pa: 2, pb: 0, style: 'hemp' })),
+    edges: [['a','b'],['a','c'],['a','d'],['b','e'],['b','f'],['c','g'],['c','h'],['c','i'],['d','j']].map(([a, b]) => ({ id: uid(), a, b, pa: 2, pb: 0, style: 'blue' })),
     collapsed: [],
   };
 }
 let loaded = false;
-try { const d = JSON.parse(localStorage.getItem(KEY)); if (d && d.S && d.S.nodes.length) { S = d.S; view = d.view || view; bg = d.bg || bg; loaded = true; } } catch (e) {}
+try { const d = JSON.parse(localStorage.getItem(KEY)); if (d && d.S && d.S.nodes.length) { S = d.S; view = d.view || view; bg = ['light','mist','night'].includes(d.bg) ? d.bg : bg; loaded = true; } } catch (e) {}
 if (!loaded) demo();
 applyBg();
 reindex();
