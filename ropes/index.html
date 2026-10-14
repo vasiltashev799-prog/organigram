@@ -13,7 +13,7 @@
   --font: 'Noto Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --ui: rgba(255,255,255,.88); --ui-ink: #0a1a33;
 }
-body[data-bg=light] { --card:#ffffff; --nink:#0a1a33; --sub:#45556a; --edge:rgba(10,26,51,.14); --veil:rgba(255,255,255,.75); --shadow:rgba(10,26,51,.30); --brand:#6b7a8c; }
+body[data-bg=light], body[data-bg=white] { --card:#ffffff; --nink:#0a1a33; --sub:#45556a; --edge:rgba(10,26,51,.14); --veil:rgba(255,255,255,.75); --shadow:rgba(10,26,51,.30); --brand:#6b7a8c; }
 body[data-bg=mist]  { --card:#ffffff; --nink:#0a1a33; --sub:#45556a; --edge:rgba(10,108,255,.22); --veil:rgba(234,242,255,.8); --shadow:rgba(10,60,160,.32); --brand:#45556a; }
 body[data-bg=night] { --card:#10284a; --nink:#eef4ff; --sub:#9db3d1; --edge:rgba(120,170,255,.25); --veil:rgba(4,12,26,.75); --shadow:rgba(0,0,0,.55); --brand:#9db3d1; }
 * { box-sizing: border-box; }
@@ -105,7 +105,7 @@ button:focus-visible, .sw:focus-visible { outline: 2px solid var(--accent); outl
 
 #fx { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
 body[data-bg=void], body[data-bg=night] { --ink:#fff; --mist:#bdbdbd; --ash:#9a9a9a; --line:rgba(255,255,255,.14); --ui:rgba(12,12,14,.72); --ui-ink:#fff; --pop:rgba(14,14,16,.94); --popc:#0e0e10; }
-body[data-bg=light] { --pop:rgba(255,255,255,.94); --popc:#fff; }
+body[data-bg=light], body[data-bg=white] { --pop:rgba(255,255,255,.94); --popc:#fff; }
 body[data-bg=void] { --card:#050506; --nink:#fff; --sub:#9a9a9a; --edge:rgba(255,255,255,.16); --veil:rgba(0,0,0,0); --shadow:rgba(0,0,0,.9); --brand:#9a9a9a; }
 body[data-bg=night] { --card:#0a1a33; --veil:rgba(0,0,0,0); --edge:rgba(120,170,255,.22); }
 body[data-bg=void] #brand img, body[data-bg=night] #brand img { filter: brightness(0) invert(1); }
@@ -158,8 +158,10 @@ body[data-bg=void] #nbar #nDel:hover { color: #ff7a6e; }
   <span class="sep"></span>
   <button id="undo" title="Назад (Ctrl+Z)" aria-label="Назад">↶</button>
   <button id="redo" title="Напред (Ctrl+Y)" aria-label="Напред">↷</button>
+  <button id="conn" title="Смени вида на връзките">Въже</button>
   <span class="sep"></span>
   <button class="bgb" data-bg="void" title="Празнота" aria-label="Празнота" style="background:radial-gradient(circle at 35% 35%,#0a6cff 0,#000 60%)"></button>
+  <button class="bgb" data-bg="white" title="Бяло" aria-label="Бяло" style="background:#fff;box-shadow:inset 0 0 0 1px rgba(10,26,51,.25)"></button>
   <button class="bgb" data-bg="light" title="Светло" aria-label="Светло" style="background:#fff"></button>
   <button class="bgb" data-bg="night" title="Нощ" aria-label="Нощ" style="background:radial-gradient(circle at 30% 30%,#3d8bff,#050d1c 70%)"></button>
   <span class="sep"></span>
@@ -193,6 +195,9 @@ const KEY = 'ropechart.v3';
 let S = { nodes: [], edges: [], collapsed: [] };
 let view = { x: 0, y: 0, z: 1 };
 let bg = 'void';
+let conn = 'rope';
+const isLight = () => bg === 'light' || bg === 'white';
+const CONN_NAMES = { rope: 'Въже', line: 'Линия', elbow: 'Ъгъл' };
 let sel = new Set();
 let selRope = null;
 const rt = new Map();     // id -> runtime на звено
@@ -223,6 +228,7 @@ function mkNoise(cu, cv2, seed) {
 }
 const BGS = {
   void:  { c: '#000000', a: 1,   cols: ['#0a6cff', '#3d8bff', '#00b4e6', '#5b6bff', '#9cc2ff', '#7fb0ff'] },
+  white: { c: '#ffffff', a: 0, cols: ['#0a6cff'] },
   light: { c: '#ffffff', a: .6,  cols: ['#0a6cff', '#00b4e6', '#3d8bff', '#0a6cff'] },
   night: { c: '#050d1c', a: 1,   cols: ['#0a6cff', '#3d8bff', '#00b4e6', '#9cc2ff', '#ffffff'] },
 };
@@ -243,7 +249,8 @@ function initParts() {
   });
 }
 function drawBg(dt, t) {
-  const B = BGS[bg], pad = 50, ww = W + pad * 2, hh = H + pad * 2, nc = B.cols.length - (bg === 'void' ? 1 : 0);
+  const B = BGS[bg]; if (!B.a) { fctx.setTransform(dpr, 0, 0, dpr, 0, 0); fctx.clearRect(0, 0, W, H); return; }
+  const pad = 50, ww = W + pad * 2, hh = H + pad * 2, nc = B.cols.length - (bg === 'void' ? 1 : 0);
   fctx.setTransform(dpr, 0, 0, dpr, 0, 0); fctx.clearRect(0, 0, W, H); fctx.lineJoin = 'round';
   for (const p of parts) {
     if (!reduceMotion) { p.x += p.vx * dt * p.z; p.y += p.vy * dt * p.z; p.rot += p.vr * dt; }
@@ -328,7 +335,7 @@ function restore(s) { S = JSON.parse(s); reindex(); updateButtons(); saveSoon();
 function undo() { if (hpos > 0) { restore(hist[--hpos]); } }
 function redo() { if (hpos < hist.length - 1) { restore(hist[++hpos]); } }
 function updateButtons() { $('#undo').disabled = hpos <= 0; $('#redo').disabled = hpos >= hist.length - 1; }
-function saveSoon() { clearTimeout(saveT); saveT = setTimeout(() => { try { localStorage.setItem(KEY, JSON.stringify({ S, view, bg })); } catch (e) {} }, 400); }
+function saveSoon() { clearTimeout(saveT); saveT = setTimeout(() => { try { localStorage.setItem(KEY, JSON.stringify({ S, view, bg, conn })); } catch (e) {} }, 400); }
 
 /* ---------- въже (Verlet) ---------- */
 const NP = 20;
@@ -364,8 +371,8 @@ function drawRope(r, alpha, ws, glow) {
   };
   ctx.globalAlpha = alpha; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
   if (glow) { path(); ctx.strokeStyle = 'rgba(10,108,255,.35)'; ctx.lineWidth = w + 9; ctx.stroke(); }
-  if (bg !== 'light') { path(); ctx.strokeStyle = 'rgba(10,108,255,.18)'; ctx.lineWidth = w + 12; ctx.stroke(); }
-  ctx.save(); ctx.translate(4, 8); path(); ctx.strokeStyle = (bg === 'light' ? 'rgba(10,26,51,.13)' : 'rgba(0,0,0,.55)'); ctx.lineWidth = w + 2; ctx.stroke(); ctx.restore();
+  if (!isLight()) { path(); ctx.strokeStyle = 'rgba(10,108,255,.18)'; ctx.lineWidth = w + 12; ctx.stroke(); }
+  ctx.save(); ctx.translate(4, 8); path(); ctx.strokeStyle = (isLight() ? 'rgba(10,26,51,.13)' : 'rgba(0,0,0,.55)'); ctx.lineWidth = w + 2; ctx.stroke(); ctx.restore();
   path(); ctx.strokeStyle = st.base; ctx.lineWidth = w; ctx.stroke();
   path(); ctx.strokeStyle = st.hi; ctx.lineWidth = w * 0.5; ctx.globalAlpha = alpha * 0.85; ctx.stroke(); ctx.globalAlpha = alpha;
   // усукване: коси чертички по дължината
@@ -391,6 +398,50 @@ function drawRope(r, alpha, ws, glow) {
   }
   ctx2.globalAlpha = 1;
   ctx.globalAlpha = 1;
+}
+const DIRS = [[0, -1], [1, 0], [0, 1], [-1, 0]];
+function connPath(A, pa, B, pb) {
+  const da = DIRS[pa], db = pb == null ? null : DIRS[pb], pts = [];
+  if (conn === 'line') {
+    const d = Math.hypot(B.x - A.x, B.y - A.y), k = clamp(d * 0.5, 40, 220);
+    const c1 = { x: A.x + da[0] * k, y: A.y + da[1] * k }, c2 = db ? { x: B.x + db[0] * k, y: B.y + db[1] * k } : B;
+    for (let i = 0; i < NP; i++) { const t = i / (NP - 1), u = 1 - t;
+      pts.push({ x: u*u*u*A.x + 3*u*u*t*c1.x + 3*u*t*t*c2.x + t*t*t*B.x, y: u*u*u*A.y + 3*u*u*t*c1.y + 3*u*t*t*c2.y + t*t*t*B.y }); }
+    return { pts, smooth: true };
+  }
+  const va = da[0] === 0, vb = db ? db[0] === 0 : va, out = 26;
+  const a1 = { x: A.x + da[0] * out, y: A.y + da[1] * out }, b1 = db ? { x: B.x + db[0] * out, y: B.y + db[1] * out } : B;
+  pts.push(A, a1);
+  if (va && vb) { const my = (a1.y + b1.y) / 2; pts.push({ x: a1.x, y: my }, { x: b1.x, y: my }); }
+  else if (!va && !vb) { const mx = (a1.x + b1.x) / 2; pts.push({ x: mx, y: a1.y }, { x: mx, y: b1.y }); }
+  else if (va) pts.push({ x: a1.x, y: b1.y }); else pts.push({ x: b1.x, y: a1.y });
+  pts.push(b1, B);
+  return { pts, smooth: false };
+}
+function drawConn(A, pa, B, pb, style, alpha, ws, glow, t, hitRope) {
+  const st = ROPES[style] || ROPES.blue, col = isLight() ? st.base : st.hi, w = 2.6 * ws;
+  const { pts, smooth } = connPath(A, pa, B, pb);
+  if (hitRope) hitRope.pts.forEach((q, i) => { const p = pts[Math.min(i, pts.length - 1)]; q.x = p.x; q.y = p.y; });
+  const path = () => {
+    ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y);
+    if (smooth) { for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y); }
+    else for (let i = 1; i < pts.length - 1; i++) ctx.arcTo(pts[i].x, pts[i].y, pts[i + 1].x, pts[i + 1].y, 16);
+    ctx.lineTo(pts[pts.length - 1].x, pts[pts.length - 1].y);
+  };
+  ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.globalAlpha = alpha;
+  if (glow) { path(); ctx.strokeStyle = 'rgba(10,108,255,.3)'; ctx.lineWidth = w + 10; ctx.stroke(); }
+  path(); ctx.strokeStyle = col; ctx.globalAlpha = alpha * (isLight() ? .55 : .5); ctx.lineWidth = w; ctx.stroke();
+  ctx.save(); ctx.setLineDash([2, 22]); ctx.lineDashOffset = -(t * 0.04) % 24; path();
+  ctx.strokeStyle = isLight() ? st.base : '#fff'; ctx.globalAlpha = alpha * .9; ctx.lineWidth = w * 1.15; ctx.stroke(); ctx.restore();
+  for (const q of [A, B]) {
+    ctx2.globalAlpha = alpha; ctx2.beginPath(); ctx2.arc(q.x, q.y, 5.2 * ws, 0, 6.2832);
+    ctx2.fillStyle = isLight() ? '#fff' : '#000'; ctx2.fill(); ctx2.strokeStyle = col; ctx2.lineWidth = 2.4 * ws; ctx2.stroke();
+  }
+  ctx.globalAlpha = 1; ctx2.globalAlpha = 1;
+}
+function setConn(c) {
+  conn = c; $('#conn').textContent = CONN_NAMES[c];
+  for (const rp of ropes.values()) rp.init = false;
 }
 function ropeDist(r, x, y) {
   let best = 1e9;
@@ -448,16 +499,20 @@ function frame(t) {
   }
   let lk = null;
   if (link) { const A = portPos(link.from, link.port); lk = { rope: link.rope, A, B: link.cur, vis: 1 }; }
-  for (const x of ends) if (x.vis < 0.03) lineRope(x.rope, x.A, x.B); else if (!x.rope.init) lineRope(x.rope, x.A, x.B);
-  if (lk && !lk.rope.init) lineRope(lk.rope, lk.A, lk.B);
+  const RM = conn === 'rope';
+  if (RM) { for (const x of ends) if (x.vis < 0.03) lineRope(x.rope, x.A, x.B); else if (!x.rope.init) lineRope(x.rope, x.A, x.B);
+  if (lk && !lk.rope.init) lineRope(lk.rope, lk.A, lk.B); }
   while (acc >= 1 / 60) {
     acc -= 1 / 60;
-    for (const x of ends) if (x.vis >= 0.03) stepRope(x.rope, x.A, x.B, x.vis);
-    if (lk) stepRope(lk.rope, lk.A, lk.B, 1);
+    if (RM) { for (const x of ends) if (x.vis >= 0.03) stepRope(x.rope, x.A, x.B, x.vis);
+    if (lk) stepRope(lk.rope, lk.A, lk.B, 1); }
   }
   for (const [c, k] of [[ctx, cv], [ctx2, cv2]]) { c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, k.width, k.height); c.setTransform(dpr * view.z, 0, 0, dpr * view.z, dpr * view.x, dpr * view.y); }
-  for (const x of ends) if (x.vis >= 0.03) { x.rope.style = x.e.style; drawRope(x.rope, Math.min(1, x.vis * 1.5), 0.5 + 0.5 * x.vis, x.e.id === selRope); }
-  if (lk) drawRope(lk.rope, 1, 1, false);
+  for (const x of ends) if (x.vis >= 0.03) {
+    x.rope.style = x.e.style; const al = Math.min(1, x.vis * 1.5), ws = 0.5 + 0.5 * x.vis;
+    if (RM) drawRope(x.rope, al, ws, x.e.id === selRope); else drawConn(x.A, x.e.pa, x.B, x.e.pb, x.e.style, al, ws, x.e.id === selRope, t, x.rope);
+  }
+  if (lk) { if (RM) drawRope(lk.rope, 1, 1, false); else drawConn(lk.A, link.port, lk.B, null, 'blue', 1, 1, false, t, null); }
   placeBar();
   requestAnimationFrame(frame);
 }
@@ -693,18 +748,19 @@ addEventListener('keydown', (e) => {
 $('#add').onclick = () => { const p = toWorld(W / 2 + (Math.random() - .5) * 120, H / 2 - 60 + (Math.random() - .5) * 80); addNode(p.x, p.y, true); };
 $('#arr').onclick = () => { arrange(false); reindex(); commit(); setTimeout(fit, 700); };
 $('#fit').onclick = fit;
+$('#conn').onclick = () => { setConn(conn === 'rope' ? 'line' : conn === 'line' ? 'elbow' : 'rope'); saveSoon(); };
 $('#undo').onclick = undo; $('#redo').onclick = redo;
 document.querySelectorAll('.bgb').forEach((b) => b.onclick = () => { bg = b.dataset.bg; applyBg(); saveSoon(); });
 $('#helpb').onclick = (e) => { e.stopPropagation(); const h = $('#help'); h.style.display = h.style.display === 'block' ? 'none' : 'block'; };
 $('#exp').onclick = () => {
-  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify({ S, bg }, null, 1)], { type: 'application/json' }));
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify({ S, bg, conn }, null, 1)], { type: 'application/json' }));
   a.download = 'organigrama.json'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
 };
 $('#imp').onclick = () => $('#fileJson').click();
 $('#fileJson').onchange = (e) => {
   const f = e.target.files[0]; e.target.value = ''; if (!f) return;
   f.text().then((t) => {
-    try { const d = JSON.parse(t), s = d.S || d; if (!Array.isArray(s.nodes) || !Array.isArray(s.edges)) throw 0; S = { nodes: s.nodes, edges: s.edges, collapsed: s.collapsed || [] }; if (['void','light','night'].includes(d.bg)) { bg = d.bg; applyBg(); } sel = new Set(); reindex(); commit(); fit(); }
+    try { const d = JSON.parse(t), s = d.S || d; if (!Array.isArray(s.nodes) || !Array.isArray(s.edges)) throw 0; S = { nodes: s.nodes, edges: s.edges, collapsed: s.collapsed || [] }; if (['void','light','white','night'].includes(d.bg)) { bg = d.bg; applyBg(); } if (CONN_NAMES[d.conn]) { conn = d.conn; setConn(conn); } sel = new Set(); reindex(); commit(); fit(); }
     catch (err) { alert('Файлът не е валидна органиграма.'); }
   });
 };
@@ -730,9 +786,10 @@ function demo() {
   };
 }
 let loaded = false;
-try { const d = JSON.parse(localStorage.getItem(KEY)); if (d && d.S && d.S.nodes.length) { S = d.S; view = d.view || view; bg = ['void','light','night'].includes(d.bg) ? d.bg : bg; loaded = true; } } catch (e) {}
+try { const d = JSON.parse(localStorage.getItem(KEY)); if (d && d.S && d.S.nodes.length) { S = d.S; view = d.view || view; bg = ['void','light','white','night'].includes(d.bg) ? d.bg : bg; if (CONN_NAMES[d.conn]) conn = d.conn; loaded = true; } } catch (e) {}
 if (!loaded) demo();
 initParts();
+setConn(conn);
 applyBg();
 reindex();
 if (!loaded) { arrange(true); reindex(); fit(); }
