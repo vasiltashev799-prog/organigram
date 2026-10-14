@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="bg">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>__TITLE__</title>
+<style>
+__CSS__
+.vh { position: absolute; left: 0; right: 0; top: 0; z-index: 4; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 12px 16px; background: rgba(255, 255, 255, .92); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+.vh h1 { font-size: 16px; margin: 0 auto 0 0; display: flex; align-items: center; gap: 10px; }
+.vh h1 i { font-style: normal; font-size: 11px; letter-spacing: .08em; color: var(--accent); font-weight: 700; }
+.vh .field { width: 200px; }
+#stage { position: absolute; inset: 61px 0 0 0; }
+#lock { position: fixed; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center; background: var(--soft); padding: 16px; }
+#lock form { background: #fff; border: 1.5px solid var(--line); border-radius: var(--radius); padding: 32px; width: 380px; max-width: 100%;
+  box-shadow: 0 24px 60px rgba(10, 26, 51, .12); text-align: center; }
+#lock h2 { margin: 6px 0 4px; font-size: 20px; }
+#lock p { color: var(--mist); margin: 0 0 20px; font-size: 14px; }
+#lock .field { width: 100%; margin-bottom: 12px; text-align: center; }
+#lock .btn { width: 100%; padding: 11px; }
+#err { color: #b00020; font-size: 13px; min-height: 18px; margin-top: 10px; }
+.tag { font-size: 11px; letter-spacing: .1em; color: var(--accent); font-weight: 700; }
+</style>
+</head>
+<body>
+<div id="lock">
+  <form id="lf" autocomplete="off">
+    <div class="tag">BTL // ORGCHART</div>
+    <h2>Защитена органиграма</h2>
+    <p>Въведете паролата, която сте получили, за да видите съдържанието.</p>
+    <input class="field" id="pw" type="password" placeholder="Парола" autofocus>
+    <button class="btn primary" type="submit">Отключи</button>
+    <div id="err"></div>
+  </form>
+</div>
+<div id="app" style="display:none">
+  <div class="vh no-print">
+    <h1><i>ORG</i><span id="ttl"></span></h1>
+    <input class="field" id="q" placeholder="Търси човек или длъжност…">
+    <span id="mc" style="font-size:12px;color:var(--ash);min-width:40px"></span>
+    <div class="seg" id="lay"><button data-m="lr" class="on">Хоризонтално</button><button data-m="tb">Вертикално</button></div>
+    <select class="field" id="lvl" title="Свий до ниво"></select>
+    <button class="btn icon" id="zi" title="Приближи">+</button>
+    <button class="btn icon" id="zo" title="Отдалечи">−</button>
+    <button class="btn" id="fit">Цялата</button>
+    <button class="btn" id="prn">Печат</button>
+  </div>
+  <div id="stage" class="oc-wrap"></div>
+  <div class="detail no-print" id="detail"></div>
+  <div class="hint no-print">Влачи · колелце за zoom · клик на ● за свиване · двоен клик върху карта</div>
+</div>
+<script>
+__CRYPTO__
+</script>
+<script>
+__CHART__
+</script>
+<script>
+(function () {
+  var PAYLOAD = __PAYLOAD__;
+  var chart;
+  function start(cfg) {
+    if (cfg.expires && new Date(cfg.expires + 'T23:59:59') < new Date()) {
+      document.getElementById('lock').innerHTML = '<form><div class="tag">BTL // ORGCHART</div><h2>Срокът е изтекъл</h2><p>Този файл е валиден до ' + cfg.expires + '. Поискайте нова версия.</p></form>';
+      return;
+    }
+    document.getElementById('lock').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    document.title = cfg.title;
+    document.getElementById('ttl').textContent = cfg.title;
+    var stage = document.getElementById('stage'), detail = document.getElementById('detail');
+    if (cfg.watermark) {
+      var t = String(cfg.watermark).replace(/[<>&"]/g, '');
+      var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="360" height="220"><text x="20" y="130" transform="rotate(-24 180 110)" font-family="sans-serif" font-size="17" fill="#0a1a33" fill-opacity=".09">' + t + '</text></svg>';
+      var w = document.createElement('div');
+      w.className = 'wm';
+      w.style.backgroundImage = 'url("data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg))) + '")';
+      document.getElementById('app').appendChild(w);
+    }
+    chart = new OrgChart(stage, {
+      layout: cfg.layout || 'lr',
+      onSelect: function (n) {
+        if (!n) { detail.classList.remove('show'); return; }
+        detail.innerHTML = '<button class="close" aria-label="Затвори">×</button>' + OrgChart.detailHTML(n);
+        detail.classList.add('show');
+        detail.querySelector('.close').onclick = function () { chart.select(null); };
+      }
+    });
+    chart.setData(cfg.root);
+    var lvl = document.getElementById('lvl');
+    lvl.innerHTML = '<option value="-1">Всички нива</option>';
+    for (var i = 1; i <= chart.maxDepth; i++) lvl.innerHTML += '<option value="' + i + '">Свий след ниво ' + i + '</option>';
+    var startLvl = cfg.startLevel != null ? cfg.startLevel : (chart.all.length > 80 ? 2 : -1);
+    lvl.value = String(startLvl);
+    if (startLvl >= 0 && startLvl >= 1) chart.collapseToLevel(startLvl); else chart.fit();
+    lvl.onchange = function () { var v = +lvl.value; v < 0 ? chart.expandAll() : chart.collapseToLevel(v); };
+    document.getElementById('zi').onclick = function () { chart.zoomBy(1.3); };
+    document.getElementById('zo').onclick = function () { chart.zoomBy(1 / 1.3); };
+    document.getElementById('fit').onclick = function () { chart.fit(true); };
+    document.getElementById('prn').onclick = function () { chart.fit(); window.print(); };
+    var lay = document.getElementById('lay');
+    Array.prototype.forEach.call(lay.children, function (b) {
+      b.classList.toggle('on', b.dataset.m === chart.o.layout);
+      b.onclick = function () {
+        Array.prototype.forEach.call(lay.children, function (x) { x.classList.toggle('on', x === b); });
+        chart.setLayout(b.dataset.m);
+      };
+    });
+    var q = document.getElementById('q'), mc = document.getElementById('mc');
+    q.oninput = function () { var c = chart.search(q.value); mc.textContent = q.value ? (c ? '1/' + c : '0') : ''; };
+    q.onkeydown = function (e) { if (e.key === 'Enter') { var i = chart.next(); if (i) mc.textContent = i + '/' + chart.matches.length; } };
+  }
+  var form = document.getElementById('lf'), err = document.getElementById('err');
+  if (!PAYLOAD.enc) { start(PAYLOAD.data); return; }
+  form.onsubmit = function (e) {
+    e.preventDefault();
+    err.textContent = '';
+    var pw = document.getElementById('pw').value;
+    if (!window.crypto || !crypto.subtle) { err.textContent = 'Браузърът не поддържа нужната защита. Използвайте Chrome, Edge или Firefox.'; return; }
+    OCCrypto.decrypt(PAYLOAD, pw).then(function (txt) { start(JSON.parse(txt)); })
+      .catch(function () { err.textContent = 'Грешна парола.'; });
+  };
+})();
+</script>
+</body>
+</html>

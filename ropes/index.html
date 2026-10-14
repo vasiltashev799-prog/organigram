@@ -1,0 +1,711 @@
+<!doctype html>
+<html lang="bg">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Въжена органиграма</title>
+<style>
+:root {
+  --brass: #d6aa5c; --brass-d: #8a6a2c; --ui: rgba(24,17,12,.88); --ui-ink: #f3e6cc; --ui-line: rgba(214,170,92,.28);
+  --serif: 'Palatino Linotype','Book Antiqua',Palatino,Georgia,serif;
+  --sans: 'Segoe UI',system-ui,-apple-system,Roboto,sans-serif;
+}
+body[data-bg=wood]   { --card:#efe3cc; --ink:#2b1d12; --sub:#6a563f; --edge:#bfa77c; --vig:rgba(0,0,0,.55); }
+body[data-bg=canvas] { --card:#fdfcf8; --ink:#1f242b; --sub:#586270; --edge:#c9c6b9; --vig:rgba(60,50,30,.22); }
+body[data-bg=map]    { --card:#152e38; --ink:#e8f4f0; --sub:#8db4b0; --edge:#2f5a67; --vig:rgba(0,0,0,.6); }
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; overflow: hidden; font-family: var(--sans); background:#1b130d; }
+#vp { position: fixed; inset: 0; overflow: hidden; touch-action: none; cursor: grab; background-color:#3a2518; user-select: none; -webkit-user-select: none; }
+#vp.panning { cursor: grabbing; }
+#vig { position: fixed; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 50% 45%, transparent 45%, var(--vig) 100%); z-index: 2; }
+#world { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+#ropes { position: absolute; inset: 0; pointer-events: none; z-index: 3; }
+
+.node { position: absolute; left: 0; top: 0; width: 196px; transform-origin: 0 0; background: var(--card); color: var(--ink);
+  border: 1px solid var(--edge); border-radius: 6px 6px 12px 12px; padding: 11px 14px 12px 21px; cursor: grab;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.35), 0 2px 3px rgba(0,0,0,.35), 0 10px 20px rgba(0,0,0,.28); will-change: transform; }
+.node::before { content:""; position:absolute; left:0; top:0; bottom:0; width:8px; background:var(--c,#b5483a); border-radius:5px 0 0 11px; }
+.node.drag { box-shadow: inset 0 1px 0 rgba(255,255,255,.35), 0 4px 6px rgba(0,0,0,.35), 0 22px 34px rgba(0,0,0,.4); cursor: grabbing; }
+.node.sel { outline: 2px solid var(--brass); outline-offset: 3px; }
+.node.target { outline: 2px dashed var(--brass); outline-offset: 5px; }
+.node.gone { pointer-events: none; }
+.head { display: flex; gap: 9px; align-items: center; }
+.ico { flex: none; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-size: 18px; line-height: 1;
+  background: color-mix(in srgb, var(--c,#b5483a) 20%, transparent); background-size: cover; background-position: center; }
+.f { outline: none; overflow-wrap: anywhere; white-space: pre-wrap; min-width: 0; }
+.title { font: 700 16px/1.2 var(--serif); }
+.name { font-size: 13px; color: var(--sub); margin-top: 7px; }
+.note { font-size: 12px; line-height: 1.35; color: var(--sub); margin-top: 7px; padding-top: 7px; border-top: 1px dashed var(--edge); }
+.node:not(.editing) .f:empty { display: none; }
+.node:not(.editing) .title:empty { display: block; } .node:not(.editing) .title:empty::before { content: 'Без име'; opacity: .45; }
+.editing { cursor: text; }
+.editing .f:empty::before { content: attr(data-ph); opacity: .45; }
+.editing .f { border-radius: 3px; box-shadow: 0 0 0 1px var(--edge); padding: 1px 3px; margin-left: -3px; margin-right: -3px; }
+.editing .f:focus { box-shadow: 0 0 0 2px var(--brass); }
+
+.port { position: absolute; width: 14px; height: 14px; border-radius: 50%; cursor: crosshair; z-index: 2;
+  background: radial-gradient(circle at 35% 30%, #f3d58f, var(--brass) 55%, var(--brass-d)); border: 2px solid rgba(40,25,10,.7);
+  opacity: .0; transition: opacity .15s, transform .15s; }
+.node:hover .port, .node.sel .port, body.linking .port { opacity: 1; }
+.port:hover { transform: scale(1.35); }
+.p0 { left: calc(50% - 7px); top: -7px; } .p1 { right: -7px; top: calc(50% - 7px); }
+.p2 { left: calc(50% - 7px); bottom: -7px; } .p3 { left: -7px; top: calc(50% - 7px); }
+.badge { position: absolute; right: 10px; bottom: -12px; height: 22px; min-width: 38px; padding: 0 8px; border-radius: 11px; z-index: 3;
+  font: 700 12px var(--sans); cursor: pointer; border: 1px solid var(--brass-d); background: #2a1c11; color: var(--ui-ink); display: none; }
+.badge.on { display: block; }
+.badge.closed { background: var(--brass); color: #2a1c11; }
+
+.marquee { position: fixed; border: 1px solid var(--brass); background: rgba(214,170,92,.12); z-index: 5; pointer-events: none; display: none; }
+
+#bar { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); z-index: 10; display: flex; align-items: center; gap: 4px; padding: 6px;
+  max-width: calc(100% - 24px); overflow-x: auto; background: var(--ui); color: var(--ui-ink); border: 1px solid var(--ui-line); border-radius: 16px;
+  backdrop-filter: blur(10px); box-shadow: 0 12px 32px rgba(0,0,0,.45); }
+#bar button, .tbtn { font: 600 14px var(--sans); height: 38px; min-width: 38px; padding: 0 12px; border-radius: 10px; border: 0; background: transparent; color: inherit; cursor: pointer; white-space: nowrap; }
+#bar button:hover:not(:disabled), .tbtn:hover { background: rgba(255,255,255,.1); }
+#bar button:disabled { opacity: .35; cursor: default; }
+#bar button.primary { background: var(--brass); color: #2a1a0b; padding: 0 16px; }
+#bar button.primary:hover { background: #e6bd72; }
+#bar .sep { width: 1px; height: 22px; background: var(--ui-line); margin: 0 4px; flex: none; }
+#bar .bgb { width: 30px; height: 30px; min-width: 30px; padding: 0; border-radius: 50%; border: 2px solid transparent; }
+#bar .bgb.on { border-color: var(--brass); }
+button:focus-visible, .sw:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+
+#nbar, #rmenu, #help { position: fixed; z-index: 9; display: none; background: var(--ui); color: var(--ui-ink); border: 1px solid var(--ui-line);
+  border-radius: 12px; padding: 6px; backdrop-filter: blur(10px); box-shadow: 0 10px 26px rgba(0,0,0,.4); }
+#nbar { gap: 4px; align-items: center; transform: translate(-50%, -100%); }
+.sw { width: 20px; height: 20px; border-radius: 50%; border: 2px solid rgba(255,255,255,.35); cursor: pointer; padding: 0; flex: none; }
+.sw.on { border-color: #fff; }
+#iconmenu { position: absolute; left: 0; top: calc(100% + 6px); display: none; grid-template-columns: repeat(6, 1fr); gap: 2px; padding: 6px; background: var(--ui); border: 1px solid var(--ui-line); border-radius: 12px; }
+#iconmenu.on { display: grid; }
+#iconmenu button { height: 34px; width: 34px; font-size: 18px; border: 0; background: transparent; border-radius: 8px; cursor: pointer; }
+#iconmenu button:hover { background: rgba(255,255,255,.12); }
+#nbar .tbtn { height: 30px; min-width: 30px; padding: 0 8px; font-size: 13px; }
+#rmenu { width: 190px; }
+#rmenu .row { display: flex; align-items: center; gap: 8px; width: 100%; padding: 7px 8px; border: 0; background: transparent; color: inherit; font: 14px var(--sans); border-radius: 8px; cursor: pointer; text-align: left; }
+#rmenu .row:hover { background: rgba(255,255,255,.1); }
+#rmenu .chip { width: 38px; height: 8px; border-radius: 4px; flex: none; }
+#rmenu .del { color: #ff9c8f; }
+#help { left: 50%; bottom: 76px; transform: translateX(-50%); width: min(420px, calc(100% - 24px)); padding: 14px 16px; font-size: 13.5px; line-height: 1.5; }
+#help h3 { margin: 0 0 6px; font: 700 16px var(--serif); }
+#help ul { margin: 0; padding-left: 18px; }
+</style>
+</head>
+<body data-bg="wood">
+<div id="vp"><div id="world"></div><canvas id="ropes"></canvas></div>
+<div id="vig"></div>
+<div class="marquee" id="mq"></div>
+
+<div id="nbar" role="toolbar" aria-label="Настройки на звеното">
+  <div id="swatches" style="display:flex;gap:5px;padding:0 4px"></div>
+  <button class="tbtn" id="nIcon" title="Икона">☺</button>
+  <button class="tbtn" id="nPhoto" title="Снимка">Снимка</button>
+  <button class="tbtn" id="nDel" title="Изтрий звеното (Delete)">Изтрий</button>
+  <div id="iconmenu"></div>
+</div>
+<div id="rmenu" role="menu"></div>
+<div id="help">
+  <h3>Как се работи</h3>
+  <ul>
+    <li>Влачи от златна точка на звено до друго звено, за да вържеш въже. Първото е родител, второто е подчинено.</li>
+    <li>Двоен клик върху звено го редактира. Двоен клик върху празно място добавя ново.</li>
+    <li>Клик върху въже: смяна на стила или изтриване.</li>
+    <li>Значката най-долу на звеното скрива или показва клона му.</li>
+    <li>Shift+клик или Shift+рамка избира няколко звена. Влача ги заедно или връзвам всички към едно звено.</li>
+    <li>Празно място: влачене за преместване, колелце за мащаб. Ctrl+Z и Ctrl+Y връщат и повтарят.</li>
+  </ul>
+</div>
+
+<div id="bar">
+  <button id="add" class="primary">+ Добави</button>
+  <button id="arr" title="Подреди като дърво">Подреди</button>
+  <button id="fit" title="Покажи всичко">Побери</button>
+  <span class="sep"></span>
+  <button id="undo" title="Назад (Ctrl+Z)" aria-label="Назад">↶</button>
+  <button id="redo" title="Напред (Ctrl+Y)" aria-label="Напред">↷</button>
+  <span class="sep"></span>
+  <button class="bgb" data-bg="wood" title="Тъмно дърво" aria-label="Тъмно дърво" style="background:linear-gradient(90deg,#4a2f1d,#5a3a24 50%,#3f281a)"></button>
+  <button class="bgb" data-bg="canvas" title="Платно" aria-label="Платно" style="background:#d4d0c3"></button>
+  <button class="bgb" data-bg="map" title="Тъмна карта" aria-label="Тъмна карта" style="background:radial-gradient(circle,#2c5560,#0b1820)"></button>
+  <span class="sep"></span>
+  <button id="exp" title="Свали като JSON">Запази</button>
+  <button id="imp" title="Зареди от JSON">Зареди</button>
+  <button id="helpb" title="Помощ" aria-label="Помощ">?</button>
+</div>
+<input type="file" id="fileJson" accept=".json,application/json" hidden>
+<input type="file" id="filePhoto" accept="image/*" hidden>
+
+<script>
+(() => {
+'use strict';
+const $ = (s) => document.querySelector(s);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const uid = () => Math.random().toString(36).slice(2, 8);
+const NW = 196;
+const COLORS = ['#b5483a', '#c98a2b', '#5f8a4e', '#2f7f86', '#4a5f9a', '#7a4d86', '#4a4640'];
+const ICONS = ['👤','🏢','⚙️','💼','📣','🧪','🛠️','📦','💰','🎯','🧭','⚓'];
+const ROPES = {
+  hemp: { n: 'Коноп',  base: '#85653a', hi: '#d6b87f', w: 7 },
+  tar:  { n: 'Катран', base: '#14100d', hi: '#52463c', w: 6.5 },
+  red:  { n: 'Червено', base: '#6e1a18', hi: '#d2605a', w: 6.5 },
+  blue: { n: 'Синьо',  base: '#1b3a58', hi: '#6296c8', w: 6.5 },
+  cord: { n: 'Тънък шнур', base: '#85653a', hi: '#d6b87f', w: 3.4 },
+};
+const KEY = 'ropechart.v1';
+
+/* ---------- модел ---------- */
+let S = { nodes: [], edges: [], collapsed: [] };
+let view = { x: 0, y: 0, z: 1 };
+let bg = 'wood';
+let sel = new Set();
+let selRope = null;
+const rt = new Map();     // id -> runtime на звено
+const ropes = new Map();  // id на връзка -> въже
+let adj = new Map(), hid = new Map(), descN = new Map();
+let hist = [], hpos = -1, zTop = 10;
+
+const $vp = $('#vp'), $world = $('#world'), cv = $('#ropes'), ctx = cv.getContext('2d');
+let W = 0, H = 0, dpr = 1;
+
+function resize() {
+  W = innerWidth; H = innerHeight; dpr = Math.min(2, devicePixelRatio || 1);
+  cv.width = W * dpr; cv.height = H * dpr; cv.style.width = W + 'px'; cv.style.height = H + 'px';
+}
+addEventListener('resize', resize); resize();
+
+/* ---------- фонове (генерирани, безшевни) ---------- */
+function rng(seed) { let s = seed >>> 0; return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296); }
+function mkNoise(cu, cv2, seed) {
+  const r = rng(seed), a = new Float32Array(cu * cv2).map(() => r());
+  const sm = (t) => t * t * (3 - 2 * t);
+  return (u, v) => {
+    u = ((u % cu) + cu) % cu; v = ((v % cv2) + cv2) % cv2;
+    const iu = Math.floor(u), iv = Math.floor(v), su = sm(u - iu), sv = sm(v - iv);
+    const x1 = (iu + 1) % cu, y1 = (iv + 1) % cv2, g = (x, y) => a[y * cu + x];
+    return (g(iu, iv) * (1 - su) + g(x1, iv) * su) * (1 - sv) + (g(iu, y1) * (1 - su) + g(x1, y1) * su) * sv;
+  };
+}
+const texCache = {};
+function texture(kind) {
+  if (texCache[kind]) return texCache[kind];
+  const T = kind === 'wood' ? 512 : kind === 'map' ? 600 : 256;
+  const c = document.createElement('canvas'); c.width = c.height = T;
+  const g = c.getContext('2d'), im = g.createImageData(T, T), d = im.data;
+  const put = (x, y, r, gg, b) => { const i = (y * T + x) * 4; d[i] = r; d[i+1] = gg; d[i+2] = b; d[i+3] = 255; };
+  if (kind === 'wood') {
+    const n1 = mkNoise(64, 4, 7), n2 = mkNoise(8, 2, 3), n3 = mkNoise(32, 8, 11), pr = rng(9);
+    const shade = [0.95, 1.08, 0.86, 1.02].map((v) => v * (0.95 + pr() * 0.1));
+    for (let y = 0; y < T; y++) for (let x = 0; x < T; x++) {
+      const k = x >> 7, xin = x & 127, e = Math.min(xin, 127 - xin);
+      const grain = 0.5 * n1(x / 8, y / 128) + 0.3 * n3(x / 16, y / 64) + 0.2 * n2(x / 64, y / 256);
+      const ring = 0.5 + 0.5 * Math.sin(x * 6.2832 * 18 / T + n2(x / 64, y / 256) * 9 + k * 2);
+      let m = shade[k] * (0.6 + 0.55 * grain + 0.14 * ring);
+      if (e < 2) m *= 0.4 + 0.2 * e; else if (e < 7) m *= 0.88 + 0.017 * e;
+      put(x, y, 80 * m, 51 * m, 33 * m);
+    }
+  } else if (kind === 'canvas') {
+    const r = rng(21), row = Float32Array.from({ length: T }, r), col = Float32Array.from({ length: T }, r), mott = mkNoise(8, 8, 2);
+    for (let y = 0; y < T; y++) for (let x = 0; x < T; x++) {
+      const v = 1 + 0.09 * (row[y] - .5) + 0.09 * (col[x] - .5) + (((x + y) & 1) ? 0.03 : -0.03) + 0.1 * (mott(x / 32, y / 32) - .5);
+      put(x, y, 208 * v, 205 * v, 192 * v);
+    }
+  } else {
+    const P = 6.2832 / T;
+    const f = (x, y) => Math.sin(P * (x + 2 * y) + 1) * .9 + Math.sin(P * (3 * x - y) + 2) * .6 + Math.sin(P * (2 * x + 3 * y) + 4) * .5
+      + Math.sin(P * (5 * x - 4 * y) + .5) * .28 + Math.sin(P * (4 * x + 5 * y) + 2.2) * .2;
+    const L = 3.4, r = rng(4);
+    for (let y = 0; y < T; y++) for (let x = 0; x < T; x++) {
+      const v = f(x, y), gx = f(x + 1, y) - v, gy = f(x, y + 1) - v, grad = Math.hypot(gx, gy) * L + 1e-4;
+      const lv = v * L, fr = lv - Math.floor(lv), dist = Math.min(fr, 1 - fr) / grad;
+      const a = clamp(1 - (dist - 0.35) / 0.9, 0, 1), major = (((Math.floor(lv) % 5) + 5) % 5) === 0;
+      const k = a * (major ? 0.55 : 0.26), n = (r() - .5) * 3;
+      put(x, y, 11 + 90 * k + n, 25 + 175 * k + n, 33 + 165 * k + n);
+    }
+  }
+  g.putImageData(im, 0, 0);
+  return (texCache[kind] = { url: c.toDataURL('image/jpeg', .92), T });
+}
+function applyBg() {
+  document.body.dataset.bg = bg;
+  const t = texture(bg);
+  $vp.style.backgroundImage = `url(${t.url})`; $vp.style.backgroundSize = t.T + 'px ' + t.T + 'px';
+  document.querySelectorAll('.bgb').forEach((b) => b.classList.toggle('on', b.dataset.bg === bg));
+  applyView();
+}
+function applyView() {
+  $world.style.transform = `translate(${view.x}px,${view.y}px) scale(${view.z})`;
+  $vp.style.backgroundPosition = `${view.x}px ${view.y}px`;
+}
+
+/* ---------- индекс, DOM ---------- */
+function reindex() {
+  const ids = new Set(S.nodes.map((n) => n.id));
+  S.edges = S.edges.filter((e) => ids.has(e.a) && ids.has(e.b));
+  S.collapsed = S.collapsed.filter((id) => ids.has(id));
+  adj = new Map();
+  for (const e of S.edges) { if (!adj.has(e.a)) adj.set(e.a, []); adj.get(e.a).push(e.b); }
+  const desc = (id) => { const seen = new Set(), st = [...(adj.get(id) || [])]; while (st.length) { const c = st.pop(); if (c === id || seen.has(c)) continue; seen.add(c); st.push(...(adj.get(c) || [])); } return seen; };
+  descN = new Map(); hid = new Map();
+  for (const n of S.nodes) if (adj.has(n.id)) descN.set(n.id, desc(n.id).size);
+  for (const id of S.collapsed) for (const d of desc(id)) if (!hid.has(d)) hid.set(d, id);
+  for (const id of [...sel]) if (!ids.has(id) || hid.has(id)) sel.delete(id);
+  const eids = new Set(S.edges.map((e) => e.id));
+  for (const id of ropes.keys()) if (!eids.has(id)) ropes.delete(id);
+  if (selRope && !eids.has(selRope)) selRope = null;
+  for (const e of S.edges) if (!ropes.has(e.id)) ropes.set(e.id, newRope(e.style));
+  render();
+}
+function render() {
+  const ids = new Set(S.nodes.map((n) => n.id));
+  for (const [id, r] of rt) if (!ids.has(id)) { r.el.remove(); rt.delete(id); }
+  for (const n of S.nodes) {
+    let r = rt.get(n.id);
+    if (!r) {
+      const el = document.createElement('div');
+      el.className = 'node'; el.dataset.id = n.id;
+      el.innerHTML = `<div class="head"><div class="ico"></div><div class="f title" data-f="title" data-ph="Звено"></div></div>
+        <div class="f name" data-f="name" data-ph="Име и длъжност"></div><div class="f note" data-f="note" data-ph="Бележка"></div>
+        <i class="port p0" data-p="0"></i><i class="port p1" data-p="1"></i><i class="port p2" data-p="2"></i><i class="port p3" data-p="3"></i>
+        <button class="badge" aria-label="Скрий или покажи подчинените"></button>`;
+      $world.appendChild(el);
+      r = { el, s: hid.has(n.id) ? 0 : 0.01, ang: 0, angv: 0, ox: 0, oy: 0, h: 110, px: n.x, py: n.y, sc: 0, lcx: n.x, lcy: n.y, anchor: null };
+      rt.set(n.id, r);
+    }
+    const el = r.el;
+    el.style.setProperty('--c', n.color);
+    el.classList.toggle('sel', sel.has(n.id));
+    if (!el.classList.contains('editing')) for (const f of ['title', 'name', 'note']) { const t = el.querySelector('[data-f=' + f + ']'); if (t.textContent !== (n[f] || '')) t.textContent = n[f] || ''; }
+    const ico = el.querySelector('.ico');
+    ico.style.backgroundImage = n.photo ? `url(${n.photo})` : ''; ico.textContent = n.photo ? '' : (n.icon || '👤');
+    const b = el.querySelector('.badge'), cnt = descN.get(n.id);
+    b.classList.toggle('on', !!cnt); const closed = S.collapsed.includes(n.id);
+    b.classList.toggle('closed', closed); b.textContent = cnt ? (closed ? '+' + cnt : '− ' + cnt) : '';
+    b.title = closed ? `Покажи ${cnt} скрити` : 'Скрий подчинените';
+  }
+  updateButtons();
+}
+
+/* ---------- история и запис ---------- */
+let saveT = 0;
+function snap() { return JSON.stringify(S); }
+function commit() {
+  const s = snap();
+  if (hist[hpos] === s) return;
+  hist = hist.slice(0, hpos + 1); hist.push(s); if (hist.length > 100) hist.shift(); hpos = hist.length - 1;
+  updateButtons(); saveSoon();
+}
+function restore(s) { S = JSON.parse(s); reindex(); updateButtons(); saveSoon(); }
+function undo() { if (hpos > 0) { restore(hist[--hpos]); } }
+function redo() { if (hpos < hist.length - 1) { restore(hist[++hpos]); } }
+function updateButtons() { $('#undo').disabled = hpos <= 0; $('#redo').disabled = hpos >= hist.length - 1; }
+function saveSoon() { clearTimeout(saveT); saveT = setTimeout(() => { try { localStorage.setItem(KEY, JSON.stringify({ S, view, bg })); } catch (e) {} }, 400); }
+
+/* ---------- въже (Verlet) ---------- */
+const NP = 20;
+function newRope(style) { return { pts: Array.from({ length: NP }, () => ({ x: 0, y: 0, px: 0, py: 0 })), L: 0, init: false, style: style || 'hemp' }; }
+function lineRope(r, A, B) {
+  const d = Math.hypot(B.x - A.x, B.y - A.y);
+  r.pts.forEach((p, i) => { const t = i / (NP - 1); p.x = p.px = A.x + (B.x - A.x) * t; p.y = p.py = A.y + (B.y - A.y) * t; });
+  r.L = d; r.init = true;
+}
+function stepRope(r, A, B, vis) {
+  const d = Math.hypot(B.x - A.x, B.y - A.y), tgt = d + (d * 0.2 + 40) * vis;
+  r.L = Math.max(d * 1.005, r.L + (tgt - r.L) * 0.18);
+  const p = r.pts, seg = r.L / (NP - 1);
+  for (let i = 1; i < NP - 1; i++) {
+    const q = p[i], vx = (q.x - q.px) * 0.985, vy = (q.y - q.py) * 0.985;
+    q.px = q.x; q.py = q.y; q.x += vx; q.y += vy + 0.3;
+  }
+  p[0].x = p[0].px = A.x; p[0].y = p[0].py = A.y; p[NP-1].x = p[NP-1].px = B.x; p[NP-1].y = p[NP-1].py = B.y;
+  for (let it = 0; it < 18; it++) for (let i = 0; i < NP - 1; i++) {
+    const a = p[i], b = p[i+1], dx = b.x - a.x, dy = b.y - a.y, dist = Math.hypot(dx, dy);
+    if (dist <= seg || dist === 0) continue;
+    const wa = i === 0 ? 0 : 1, wb = i + 1 === NP - 1 ? 0 : 1, sum = wa + wb; if (!sum) continue;
+    const k = (dist - seg) / dist;
+    a.x += dx * k * wa / sum; a.y += dy * k * wa / sum; b.x -= dx * k * wb / sum; b.y -= dy * k * wb / sum;
+  }
+}
+function drawRope(r, alpha, ws, glow) {
+  const st = ROPES[r.style] || ROPES.hemp, w = st.w * ws, p = r.pts;
+  const path = () => {
+    ctx.beginPath(); ctx.moveTo(p[0].x, p[0].y);
+    for (let i = 1; i < NP - 1; i++) ctx.quadraticCurveTo(p[i].x, p[i].y, (p[i].x + p[i+1].x) / 2, (p[i].y + p[i+1].y) / 2);
+    ctx.lineTo(p[NP-1].x, p[NP-1].y);
+  };
+  ctx.globalAlpha = alpha; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  if (glow) { path(); ctx.strokeStyle = 'rgba(214,170,92,.55)'; ctx.lineWidth = w + 9; ctx.stroke(); }
+  ctx.save(); ctx.translate(4, 8); path(); ctx.strokeStyle = 'rgba(0,0,0,.3)'; ctx.lineWidth = w + 2; ctx.stroke(); ctx.restore();
+  path(); ctx.strokeStyle = st.base; ctx.lineWidth = w; ctx.stroke();
+  path(); ctx.strokeStyle = st.hi; ctx.lineWidth = w * 0.5; ctx.globalAlpha = alpha * 0.85; ctx.stroke(); ctx.globalAlpha = alpha;
+  // усукване: коси чертички по дължината
+  const step = Math.max(2.2, w * 0.85); ctx.beginPath(); let carry = 0;
+  for (let i = 0; i < NP - 1; i++) {
+    const a = p[i], b = p[i+1], dx = b.x - a.x, dy = b.y - a.y, l = Math.hypot(dx, dy); if (!l) continue;
+    const tx = dx / l, ty = dy / l, nx = -ty, ny = tx;
+    for (let s = carry; s < l; s += step) {
+      const cx = a.x + tx * s, cy = a.y + ty * s;
+      ctx.moveTo(cx - nx * w * .47 - tx * w * .38, cy - ny * w * .47 - ty * w * .38);
+      ctx.lineTo(cx + nx * w * .47 + tx * w * .38, cy + ny * w * .47 + ty * w * .38);
+      carry = s + step - l;
+    }
+  }
+  ctx.strokeStyle = 'rgba(0,0,0,.38)'; ctx.lineWidth = Math.max(.8, w * 0.16); ctx.stroke();
+  for (const q of [p[0], p[NP-1]]) { // възли
+    const g = ctx.createRadialGradient(q.x - w * .3, q.y - w * .3, w * .1, q.x, q.y, w * 1.05);
+    g.addColorStop(0, st.hi); g.addColorStop(1, st.base);
+    ctx.beginPath(); ctx.arc(q.x, q.y, w * 1.0, 0, 6.2832); ctx.fillStyle = g; ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,.5)'; ctx.lineWidth = Math.max(.8, w * .14); ctx.stroke();
+    ctx.beginPath(); ctx.arc(q.x, q.y, w * .55, .4, 2.6); ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
+}
+function ropeDist(r, x, y) {
+  let best = 1e9;
+  for (let i = 0; i < NP - 1; i++) {
+    const a = r.pts[i], b = r.pts[i+1], dx = b.x - a.x, dy = b.y - a.y, l2 = dx * dx + dy * dy;
+    const t = l2 ? clamp(((x - a.x) * dx + (y - a.y) * dy) / l2, 0, 1) : 0;
+    best = Math.min(best, Math.hypot(x - a.x - dx * t, y - a.y - dy * t));
+  }
+  return best;
+}
+
+/* ---------- геометрия на звената ---------- */
+const OFF = (h) => [[0, 0], [NW / 2, h / 2], [0, h], [-NW / 2, h / 2]];
+function portPos(id, p) {
+  const r = rt.get(id), o = OFF(r.h)[p], a = r.ang * Math.PI / 180, c = Math.cos(a), s = Math.sin(a), x = o[0] * r.sc, y = o[1] * r.sc;
+  return { x: r.px + x * c - y * s, y: r.py + x * s + y * c };
+}
+function nodeById(id) { return S.nodes.find((n) => n.id === id); }
+function autoPorts(a, b) {
+  const A = nodeById(a), B = nodeById(b), dx = B.x - A.x, dy = B.y - A.y;
+  if (Math.abs(dy) >= Math.abs(dx) * 0.7) return dy > 0 ? [2, 0] : [0, 2];
+  return dx > 0 ? [1, 3] : [3, 1];
+}
+
+/* ---------- кадър ---------- */
+let acc = 0, last = performance.now(), link = null;
+function frame(t) {
+  const dt = Math.min(0.05, (t - last) / 1000); last = t; acc += dt;
+  for (const n of S.nodes) {
+    const r = rt.get(n.id); if (!r) continue;
+    r.h = r.el.offsetHeight || 110;
+    const want = hid.has(n.id) ? 0 : 1; if (want === 0) r.anchor = hid.get(n.id);
+    r.s += (want - r.s) * 0.14; if (Math.abs(want - r.s) < 0.004) r.s = want;
+    r.ox *= 0.84; r.oy *= 0.84; if (Math.abs(r.ox) < .05) r.ox = 0; if (Math.abs(r.oy) < .05) r.oy = 0;
+    const cx = n.x + r.ox, cy = n.y + r.oy - r.h / 2;
+    const vx = cx - r.lcx; r.lcx = cx;
+    const target = clamp(-vx * 1.5, -17, 17);
+    r.angv += (target - r.ang) * 0.1; r.angv *= 0.86; r.ang += r.angv;
+    let px = cx, py = cy;
+    const an = r.anchor && nodeById(r.anchor);
+    if (r.s < 1 && an) { px = an.x + (cx - an.x) * r.s; py = an.y + (cy - an.y) * r.s; }
+    r.px = px; r.py = py; r.sc = r.s;
+    r.el.style.transform = `translate(${px}px,${py}px) rotate(${r.ang}deg) scale(${r.s}) translate(${-NW / 2}px,0)`;
+    r.el.style.opacity = Math.min(1, r.s * 1.4);
+    r.el.classList.toggle('gone', r.s < 0.5);
+    r.el.style.display = r.s < 0.01 && want === 0 ? 'none' : '';
+  }
+  // физика на въжетата с фиксирана стъпка
+  const ends = [];
+  for (const e of S.edges) {
+    const ra = rt.get(e.a), rb = rt.get(e.b), rope = ropes.get(e.id); if (!ra || !rb || !rope) continue;
+    const A = portPos(e.a, e.pa), B = portPos(e.b, e.pb), vis = Math.min(ra.sc, rb.sc);
+    ends.push({ e, rope, A, B, vis });
+  }
+  let lk = null;
+  if (link) { const A = portPos(link.from, link.port); lk = { rope: link.rope, A, B: link.cur, vis: 1 }; }
+  for (const x of ends) if (x.vis < 0.03) lineRope(x.rope, x.A, x.B); else if (!x.rope.init) lineRope(x.rope, x.A, x.B);
+  if (lk && !lk.rope.init) lineRope(lk.rope, lk.A, lk.B);
+  while (acc >= 1 / 60) {
+    acc -= 1 / 60;
+    for (const x of ends) if (x.vis >= 0.03) stepRope(x.rope, x.A, x.B, x.vis);
+    if (lk) stepRope(lk.rope, lk.A, lk.B, 1);
+  }
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, cv.width, cv.height);
+  ctx.setTransform(dpr * view.z, 0, 0, dpr * view.z, dpr * view.x, dpr * view.y);
+  for (const x of ends) if (x.vis >= 0.03) { x.rope.style = x.e.style; drawRope(x.rope, Math.min(1, x.vis * 1.5), 0.5 + 0.5 * x.vis, x.e.id === selRope); }
+  if (lk) drawRope(lk.rope, 1, 1, false);
+  placeBar();
+  requestAnimationFrame(frame);
+}
+
+/* ---------- панел на звеното ---------- */
+const $nbar = $('#nbar');
+function placeBar() {
+  if (sel.size === 1 && !mode && !editing) {
+    const id = [...sel][0], r = rt.get(id);
+    if (r && r.sc > 0.9) {
+      $nbar.style.display = 'flex';
+      $nbar.style.left = (view.x + r.px * view.z) + 'px'; $nbar.style.top = (view.y + (r.py - 16) * view.z) + 'px';
+      return;
+    }
+  }
+  $nbar.style.display = 'none'; $('#iconmenu').classList.remove('on');
+}
+(function buildBars() {
+  const sw = $('#swatches');
+  COLORS.forEach((c) => { const b = document.createElement('button'); b.className = 'sw'; b.style.background = c; b.dataset.c = c; b.setAttribute('aria-label', 'Цвят ' + c); sw.appendChild(b); });
+  sw.addEventListener('click', (e) => { const b = e.target.closest('.sw'); if (!b) return; const n = nodeById([...sel][0]); if (!n) return; n.color = b.dataset.c; reindex(); commit(); });
+  const im = $('#iconmenu');
+  ICONS.forEach((ic) => { const b = document.createElement('button'); b.textContent = ic; b.dataset.i = ic; im.appendChild(b); });
+  im.addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; const n = nodeById([...sel][0]); n.icon = b.dataset.i; n.photo = ''; im.classList.remove('on'); reindex(); commit(); });
+  $('#nIcon').onclick = () => im.classList.toggle('on');
+  $('#nPhoto').onclick = () => $('#filePhoto').click();
+  $('#nDel').onclick = deleteSelection;
+  $('#filePhoto').onchange = (e) => {
+    const f = e.target.files[0]; e.target.value = ''; const n = nodeById([...sel][0]); if (!f || !n) return;
+    const img = new Image(); img.onload = () => {
+      const c = document.createElement('canvas'); c.width = c.height = 120; const g = c.getContext('2d'), m = Math.min(img.width, img.height);
+      g.drawImage(img, (img.width - m) / 2, (img.height - m) / 2, m, m, 0, 0, 120, 120); n.photo = c.toDataURL('image/jpeg', .85); reindex(); commit();
+    }; img.src = URL.createObjectURL(f);
+  };
+})();
+
+/* ---------- действия ---------- */
+function toWorld(cx, cy) { return { x: (cx - view.x) / view.z, y: (cy - view.y) / view.z }; }
+function addNode(x, y, edit) {
+  const n = { id: uid(), x, y, title: '', name: '', note: '', color: COLORS[S.nodes.length % COLORS.length], icon: ICONS[S.nodes.length % ICONS.length], photo: '' };
+  S.nodes.push(n); sel = new Set([n.id]); reindex(); commit();
+  if (edit) setTimeout(() => startEdit(n.id, 'title'), 30);
+  return n;
+}
+function deleteSelection() {
+  if (selRope) { S.edges = S.edges.filter((e) => e.id !== selRope); selRope = null; reindex(); commit(); closeRopeMenu(); return; }
+  if (!sel.size) return;
+  S.nodes = S.nodes.filter((n) => !sel.has(n.id)); sel = new Set(); reindex(); commit();
+}
+function toggleCollapse(id) {
+  const ids = sel.has(id) && sel.size > 1 ? [...sel] : [id];
+  const open = S.collapsed.includes(id);
+  for (const i of ids) {
+    if (!adj.has(i)) continue;
+    const has = S.collapsed.includes(i);
+    if (open && has) S.collapsed = S.collapsed.filter((x) => x !== i);
+    else if (!open && !has) S.collapsed.push(i);
+  }
+  reindex(); commit();
+}
+function connect(ids, target, port, cur) {
+  let made = 0;
+  for (const id of ids) {
+    if (id === target || S.edges.some((e) => (e.a === id && e.b === target) || (e.a === target && e.b === id))) continue;
+    let pa, pb;
+    if (ids.length === 1) {
+      pa = port; let best = 1e9; pb = 0;
+      for (let p = 0; p < 4; p++) { const q = portPos(target, p), d = Math.hypot(q.x - cur.x, q.y - cur.y); if (d < best) { best = d; pb = p; } }
+    } else [pa, pb] = autoPorts(id, target);
+    S.edges.push({ id: uid(), a: id, b: target, pa, pb, style: 'hemp' }); made++;
+  }
+  if (made) { reindex(); commit(); }
+}
+function arrange(instant) {
+  if (!S.nodes.length) return;
+  const incoming = new Set(S.edges.map((e) => e.b));
+  let roots = S.nodes.filter((n) => !incoming.has(n.id)).map((n) => n.id);
+  if (!roots.length) roots = [S.nodes[0].id];
+  const seen = new Set(), tree = new Map(), parent = new Map();
+  const build = (id) => { seen.add(id); const ch = []; for (const c of adj.get(id) || []) if (!seen.has(c)) { parent.set(c, id); ch.push(c); } ; const out = []; for (const c of ch) if (!seen.has(c)) out.push(c); tree.set(id, out); for (const c of out) build(c); };
+  for (const r of roots) if (!seen.has(r)) build(r);
+  for (const n of S.nodes) if (!seen.has(n.id)) { roots.push(n.id); build(n.id); }
+  const GAP = 48, ROW = 200, width = new Map();
+  const wid = (id) => { const ch = tree.get(id) || []; const w = ch.length ? ch.reduce((s, c) => s + wid(c), 0) : NW + GAP; width.set(id, Math.max(w, NW + GAP)); return width.get(id); };
+  roots.forEach(wid);
+  const pos = new Map(); let ox = 0;
+  const place = (id, left, depth) => {
+    pos.set(id, { x: left + width.get(id) / 2, y: depth * ROW }); let l = left;
+    for (const c of tree.get(id) || []) { place(c, l, depth + 1); l += width.get(c); }
+  };
+  for (const r of roots) { place(r, ox, 0); ox += width.get(r); }
+  let cx = 0, cy = 0; S.nodes.forEach((n) => { cx += n.x; cy += n.y; }); cx /= S.nodes.length; cy /= S.nodes.length;
+  let mx = 0, my = 0; pos.forEach((p) => { mx += p.x; my += p.y; }); mx /= pos.size; my /= pos.size;
+  const shiftX = S.nodes.some((n) => n.x || n.y) ? cx - mx : -mx, shiftY = S.nodes.some((n) => n.x || n.y) ? cy - my : -my;
+  for (const n of S.nodes) {
+    const p = pos.get(n.id), r = rt.get(n.id), nx = p.x + shiftX, ny = p.y + shiftY;
+    if (r && !instant) { r.ox += n.x - nx; r.oy += n.y - ny; }
+    n.x = nx; n.y = ny;
+  }
+  for (const e of S.edges) { if (parent.get(e.b) === e.a) { e.pa = 2; e.pb = 0; } else [e.pa, e.pb] = autoPorts(e.a, e.b); }
+}
+function fit() {
+  const vis = S.nodes.filter((n) => !hid.has(n.id)); if (!vis.length) return;
+  let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+  vis.forEach((n) => { x0 = Math.min(x0, n.x - NW / 2); x1 = Math.max(x1, n.x + NW / 2); y0 = Math.min(y0, n.y - 60); y1 = Math.max(y1, n.y + 90); });
+  const z = clamp(Math.min((W - 80) / (x1 - x0), (H - 200) / (y1 - y0)), .25, 1.4);
+  view.z = z; view.x = W / 2 - (x0 + x1) / 2 * z; view.y = (H - 70) / 2 - (y0 + y1) / 2 * z; applyView(); saveSoon();
+}
+
+/* ---------- редакция ---------- */
+let editing = null;
+function startEdit(id, field) {
+  const r = rt.get(id); if (!r) return;
+  if (editing && editing !== id) endEdit();
+  editing = id; r.el.classList.add('editing');
+  r.el.querySelectorAll('.f').forEach((f) => { try { f.contentEditable = 'plaintext-only'; } catch (e) {} if (!f.isContentEditable) f.contentEditable = 'true'; });
+  const f = r.el.querySelector('[data-f=' + (field || 'title') + ']'); f.focus();
+  const rg = document.createRange(); rg.selectNodeContents(f); rg.collapse(false); const s = getSelection(); s.removeAllRanges(); s.addRange(rg);
+}
+function endEdit() {
+  if (!editing) return; const id = editing; editing = null;
+  const r = rt.get(id), n = nodeById(id); if (!r) return;
+  if (n) for (const f of ['title', 'name', 'note']) n[f] = r.el.querySelector('[data-f=' + f + ']').innerText.replace(/\n+$/, '').trim();
+  r.el.classList.remove('editing'); r.el.querySelectorAll('.f').forEach((f) => { f.contentEditable = 'false'; f.removeAttribute('contenteditable'); });
+  render(); commit();
+}
+$world.addEventListener('focusout', (e) => { const el = e.target.closest('.node'); if (el && editing && !(e.relatedTarget && el.contains(e.relatedTarget))) endEdit(); });
+$world.addEventListener('keydown', (e) => {
+  if (!editing) return; const f = e.target.closest('.f'); if (!f) return;
+  if (e.key === 'Escape') { document.activeElement.blur(); }
+  if (e.key === 'Enter' && !e.shiftKey && f.dataset.f !== 'note') { e.preventDefault(); const next = f.dataset.f === 'title' ? 'name' : 'note'; rt.get(editing).el.querySelector('[data-f=' + next + ']').focus(); }
+});
+$vp.addEventListener('dblclick', (e) => {
+  const nodeEl = e.target.closest('.node');
+  if (nodeEl) { startEdit(nodeEl.dataset.id, (e.target.closest('.f') || {}).dataset ? e.target.closest('.f').dataset.f : 'title'); return; }
+  const p = toWorld(e.clientX, e.clientY); addNode(p.x, p.y - 40, true);
+});
+
+/* ---------- мишка ---------- */
+let mode = null;
+const $mq = $('#mq');
+function closeRopeMenu() { $('#rmenu').style.display = 'none'; }
+function openRopeMenu(eid, x, y) {
+  selRope = eid; const m = $('#rmenu'); m.innerHTML = '';
+  for (const k in ROPES) { const b = document.createElement('button'); b.className = 'row'; b.innerHTML = `<span class="chip" style="background:linear-gradient(${ROPES[k].hi},${ROPES[k].base})"></span>${ROPES[k].n}`; b.onclick = () => { S.edges.find((e) => e.id === eid).style = k; closeRopeMenu(); commit(); }; m.appendChild(b); }
+  const d = document.createElement('button'); d.className = 'row del'; d.textContent = 'Изтрий въжето'; d.onclick = deleteSelection; m.appendChild(d);
+  m.style.display = 'block'; m.style.left = clamp(x + 8, 8, W - 200) + 'px'; m.style.top = clamp(y + 8, 8, H - 260) + 'px';
+}
+$vp.addEventListener('pointerdown', (e) => {
+  if (e.button > 1) return;
+  const t = e.target;
+  if (t.closest('.editing .f')) return;
+  if (document.activeElement && document.activeElement !== document.body && document.activeElement.blur) document.activeElement.blur();
+  closeRopeMenu(); $('#help').style.display = 'none';
+  const nodeEl = t.closest('.node'), wp = toWorld(e.clientX, e.clientY);
+  if (e.button === 1) { e.preventDefault(); mode = { type: 'pan', sx: e.clientX, sy: e.clientY, vx: view.x, vy: view.y }; $vp.classList.add('panning'); return; }
+  if (t.closest('.badge') && nodeEl) { e.preventDefault(); toggleCollapse(nodeEl.dataset.id); return; }
+  if (t.closest('.port') && nodeEl) {
+    e.preventDefault(); const id = nodeEl.dataset.id, port = +t.closest('.port').dataset.p;
+    if (!sel.has(id)) { sel = new Set([id]); render(); }
+    link = { from: id, port, ids: sel.size > 1 ? [...sel] : [id], rope: newRope('hemp'), cur: wp };
+    mode = { type: 'link' }; document.body.classList.add('linking'); return;
+  }
+  if (nodeEl) {
+    e.preventDefault(); const id = nodeEl.dataset.id; selRope = null;
+    if (e.shiftKey) { sel.has(id) ? sel.delete(id) : sel.add(id); render(); return; }
+    if (!sel.has(id)) { sel = new Set([id]); render(); }
+    const orig = new Map(); sel.forEach((i) => { const n = nodeById(i); orig.set(i, { x: n.x, y: n.y }); rt.get(i).el.style.zIndex = ++zTop; });
+    mode = { type: 'drag', id, sx: e.clientX, sy: e.clientY, orig, moved: false }; return;
+  }
+  // въже?
+  let hit = null, bd = 1e9;
+  for (const ed of S.edges) { const r = ropes.get(ed.id); if (!r || Math.min(rt.get(ed.a).sc, rt.get(ed.b).sc) < .5) continue; const d = ropeDist(r, wp.x, wp.y); if (d < bd) { bd = d; hit = ed; } }
+  if (hit && bd < 9 + 4 / view.z) { e.preventDefault(); sel = new Set(); render(); openRopeMenu(hit.id, e.clientX, e.clientY); return; }
+  e.preventDefault(); selRope = null;
+  if (e.shiftKey) { mode = { type: 'marquee', sx: e.clientX, sy: e.clientY, base: new Set(sel) }; return; }
+  mode = { type: 'pan', sx: e.clientX, sy: e.clientY, vx: view.x, vy: view.y, moved: false }; $vp.classList.add('panning');
+});
+addEventListener('pointermove', (e) => {
+  if (!mode) return;
+  if (mode.type === 'pan') {
+    const dx = e.clientX - mode.sx, dy = e.clientY - mode.sy; if (Math.hypot(dx, dy) > 3) mode.moved = true;
+    view.x = mode.vx + dx; view.y = mode.vy + dy; applyView();
+  } else if (mode.type === 'drag') {
+    const dx = (e.clientX - mode.sx) / view.z, dy = (e.clientY - mode.sy) / view.z;
+    if (!mode.moved && Math.hypot(dx, dy) * view.z < 3) return;
+    if (!mode.moved) { mode.moved = true; mode.orig.forEach((_, i) => rt.get(i).el.classList.add('drag')); }
+    mode.orig.forEach((o, i) => { const n = nodeById(i); n.x = o.x + dx; n.y = o.y + dy; });
+  } else if (mode.type === 'link') {
+    link.cur = toWorld(e.clientX, e.clientY);
+    const tg = document.elementFromPoint(e.clientX, e.clientY), te = tg && tg.closest('.node');
+    document.querySelectorAll('.node.target').forEach((n) => n.classList.remove('target'));
+    if (te && te.dataset.id !== link.from) te.classList.add('target');
+  } else if (mode.type === 'marquee') {
+    const x0 = Math.min(mode.sx, e.clientX), y0 = Math.min(mode.sy, e.clientY), x1 = Math.max(mode.sx, e.clientX), y1 = Math.max(mode.sy, e.clientY);
+    Object.assign($mq.style, { display: 'block', left: x0 + 'px', top: y0 + 'px', width: x1 - x0 + 'px', height: y1 - y0 + 'px' });
+    sel = new Set(mode.base);
+    for (const n of S.nodes) {
+      if (hid.has(n.id)) continue; const r = rt.get(n.id);
+      const sx0 = view.x + (r.px - NW / 2) * view.z, sx1 = sx0 + NW * view.z, sy0 = view.y + r.py * view.z, sy1 = sy0 + r.h * view.z;
+      if (sx0 < x1 && sx1 > x0 && sy0 < y1 && sy1 > y0) sel.add(n.id);
+    }
+    for (const [id, r] of rt) r.el.classList.toggle('sel', sel.has(id));
+  }
+});
+addEventListener('pointerup', (e) => {
+  if (!mode) return; const m = mode; mode = null;
+  $vp.classList.remove('panning'); document.body.classList.remove('linking');
+  document.querySelectorAll('.node.target,.node.drag').forEach((n) => n.classList.remove('target', 'drag'));
+  if (m.type === 'pan') { if (!m.moved && sel.size) { sel = new Set(); render(); } saveSoon(); }
+  else if (m.type === 'drag') { if (m.moved) commit(); else if (sel.size > 1) { sel = new Set([m.id]); render(); } }
+  else if (m.type === 'link') {
+    const l = link; link = null;
+    const tg = document.elementFromPoint(e.clientX, e.clientY), te = tg && tg.closest('.node');
+    if (te && te.dataset.id !== l.from) connect(l.ids, te.dataset.id, l.port, toWorld(e.clientX, e.clientY));
+  } else if (m.type === 'marquee') $mq.style.display = 'none';
+});
+$vp.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  const nz = clamp(view.z * Math.exp(-e.deltaY * (e.ctrlKey ? 0.01 : 0.0016)), .2, 2.6), wx = (e.clientX - view.x) / view.z, wy = (e.clientY - view.y) / view.z;
+  view.z = nz; view.x = e.clientX - wx * nz; view.y = e.clientY - wy * nz; applyView(); saveSoon();
+}, { passive: false });
+addEventListener('keydown', (e) => {
+  const tg = e.target; if (tg.isContentEditable) return;
+  const k = e.key.toLowerCase();
+  if ((e.ctrlKey || e.metaKey) && k === 'z' && !e.shiftKey) { e.preventDefault(); undo(); }
+  else if ((e.ctrlKey || e.metaKey) && (k === 'y' || (k === 'z' && e.shiftKey))) { e.preventDefault(); redo(); }
+  else if (e.key === 'Delete' || e.key === 'Backspace') { deleteSelection(); }
+  else if (e.key === 'Escape') { sel = new Set(); selRope = null; closeRopeMenu(); render(); }
+});
+
+/* ---------- лента ---------- */
+$('#add').onclick = () => { const p = toWorld(W / 2 + (Math.random() - .5) * 120, H / 2 - 60 + (Math.random() - .5) * 80); addNode(p.x, p.y, true); };
+$('#arr').onclick = () => { arrange(false); reindex(); commit(); setTimeout(fit, 700); };
+$('#fit').onclick = fit;
+$('#undo').onclick = undo; $('#redo').onclick = redo;
+document.querySelectorAll('.bgb').forEach((b) => b.onclick = () => { bg = b.dataset.bg; applyBg(); saveSoon(); });
+$('#helpb').onclick = (e) => { e.stopPropagation(); const h = $('#help'); h.style.display = h.style.display === 'block' ? 'none' : 'block'; };
+$('#exp').onclick = () => {
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify({ S, bg }, null, 1)], { type: 'application/json' }));
+  a.download = 'organigrama.json'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+};
+$('#imp').onclick = () => $('#fileJson').click();
+$('#fileJson').onchange = (e) => {
+  const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+  f.text().then((t) => {
+    try { const d = JSON.parse(t), s = d.S || d; if (!Array.isArray(s.nodes) || !Array.isArray(s.edges)) throw 0; S = { nodes: s.nodes, edges: s.edges, collapsed: s.collapsed || [] }; if (d.bg && texture) { bg = d.bg; applyBg(); } sel = new Set(); reindex(); commit(); fit(); }
+    catch (err) { alert('Файлът не е валидна органиграма.'); }
+  });
+};
+
+/* ---------- старт ---------- */
+function demo() {
+  const mk = (id, title, name, color, icon, note) => ({ id, x: 0, y: 0, title, name, note: note || '', color, icon, photo: '' });
+  S = {
+    nodes: [
+      mk('a', 'Управление', 'Мария Георгиева, изпълнителен директор', COLORS[0], '🧭'),
+      mk('b', 'Продажби', 'Иван Петров, ръководител', COLORS[1], '💼', 'Цел за тримесечието: 12 нови клиенти'),
+      mk('c', 'Производство', 'Стоян Димитров, директор', COLORS[2], '🛠️'),
+      mk('d', 'Финанси', 'Елена Колева, главен счетоводител', COLORS[4], '💰'),
+      mk('e', 'Ключови клиенти', 'Нина Иванова', COLORS[1], '🎯'),
+      mk('f', 'Търговски екип Юг', 'Борис Тодоров', COLORS[1], '📣'),
+      mk('g', 'Склад', 'Георги Маринов', COLORS[2], '📦'),
+      mk('h', 'Качество', 'Десислава Русева', COLORS[3], '🧪'),
+      mk('i', 'Поддръжка', 'Калоян Начев', COLORS[2], '⚙️'),
+      mk('j', 'Счетоводство', 'Весела Атанасова', COLORS[4], '🏢'),
+    ],
+    edges: [['a','b'],['a','c'],['a','d'],['b','e'],['b','f'],['c','g'],['c','h'],['c','i'],['d','j']].map(([a, b]) => ({ id: uid(), a, b, pa: 2, pb: 0, style: 'hemp' })),
+    collapsed: [],
+  };
+}
+let loaded = false;
+try { const d = JSON.parse(localStorage.getItem(KEY)); if (d && d.S && d.S.nodes.length) { S = d.S; view = d.view || view; bg = d.bg || bg; loaded = true; } } catch (e) {}
+if (!loaded) demo();
+applyBg();
+reindex();
+if (!loaded) { arrange(true); reindex(); fit(); }
+else applyView();
+for (const [id, r] of rt) { const n = nodeById(id); r.s = hid.has(id) ? 0 : 1; r.lcx = n.x; }
+hist = [snap()]; hpos = 0; updateButtons();
+requestAnimationFrame((t) => { last = t; frame(t); });
+})();
+</script>
+</body>
+</html>

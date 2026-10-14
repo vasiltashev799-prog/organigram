@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="bg">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BTL · Органиграми</title>
+<style>
+__CSS_CHART__
+__CSS_APP__
+</style>
+</head>
+<body>
+<header class="top no-print">
+  <div class="brand"><span class="logo">BTL</span><span class="tag">// ORGCHART</span></div>
+  <input class="field title" id="title" value="Органиграма" spellcheck="false" title="Име на органиграмата">
+  <div class="sp"></div>
+  <button class="btn" id="open">Отвори</button>
+  <button class="btn" id="save">Запази</button>
+  <button class="btn" id="csv" title="Колони: Име, Длъжност, Началник, Имейл, Телефон">Импорт CSV</button>
+  <button class="btn primary" id="export">Експорт за колеги</button>
+  <input type="file" id="fopen" accept=".json,application/json" hidden>
+  <input type="file" id="fcsv" accept=".csv,.txt,text/csv" hidden>
+</header>
+<main class="main">
+  <aside class="side no-print" id="side">
+    <div class="side-h">
+      <b>Структура</b>
+      <span id="count" class="muted"></span>
+    </div>
+    <p class="help">Един ред = един човек. <kbd>Tab</kbd> го прави подчинен, <kbd>Shift+Tab</kbd> го връща назад, <kbd>Enter</kbd> добавя колега, <kbd>Ctrl+Enter</kbd> добавя подчинен. Формат: <code>Име | Длъжност | Имейл | Телефон</code>. Може да поставите списък от Excel.</p>
+    <textarea id="ed" spellcheck="false" wrap="off"></textarea>
+    <div id="warn" class="warn"></div>
+  </aside>
+  <section class="canvas">
+    <div class="bar no-print">
+      <input class="field" id="q" placeholder="Търси човек или длъжност…">
+      <span id="mc" class="muted"></span>
+      <div class="seg" id="lay"><button data-m="lr" class="on">Хоризонтално</button><button data-m="tb">Вертикално</button></div>
+      <select class="field" id="lvl" title="Свий до ниво"></select>
+      <button class="btn icon" id="zi" title="Приближи">+</button>
+      <button class="btn icon" id="zo" title="Отдалечи">−</button>
+      <button class="btn" id="fit">Цялата</button>
+      <button class="btn icon" id="tog" title="Скрий/покажи панела">⇤</button>
+    </div>
+    <div id="stage" class="oc-wrap"></div>
+    <div class="detail no-print" id="detail"></div>
+    <div class="hint no-print">Влачи · колелце за zoom · клик на ● за свиване · клик върху карта сочи реда</div>
+  </section>
+</main>
+
+<div class="modal" id="modal" hidden>
+  <div class="card">
+    <h2>Експорт за колеги</h2>
+    <p class="muted">Създава се един HTML файл, който се отваря с двоен клик във всеки браузър — без инсталация и интернет.</p>
+    <label class="chk"><input type="checkbox" id="xenc" checked> Защити с парола (шифроване AES-256)</label>
+    <div id="xpwrow" class="row">
+      <input class="field" id="xpw" type="text" placeholder="Парола" autocomplete="off">
+      <button class="btn" id="xgen" type="button">Генерирай</button>
+    </div>
+    <div class="note" id="xnote">Паролата не може да се възстанови. Изпратете я по друг канал, не заедно с файла.</div>
+    <label class="lbl">Воден знак (напр. име на получателя) <span class="muted">— по желание</span></label>
+    <input class="field full" id="xwm" placeholder="напр. Иван Петров · поверително">
+    <div class="two">
+      <div><label class="lbl">Валиден до</label><input class="field full" id="xexp" type="date"></div>
+      <div><label class="lbl">Начален изглед</label>
+        <select class="field full" id="xlvl"></select></div>
+    </div>
+    <div class="actions">
+      <button class="btn" id="xcancel" type="button">Отказ</button>
+      <button class="btn" id="xsvg" type="button">SVG</button>
+      <button class="btn" id="xpng" type="button">PNG</button>
+      <button class="btn primary" id="xgo" type="button">Създай HTML файл</button>
+    </div>
+    <div class="note" id="xmsg"></div>
+  </div>
+</div>
+
+<script>
+window.__ASSETS = __ASSETS__;
+</script>
+<script>
+__JS_CRYPTO__
+</script>
+<script>
+__JS_CHART__
+</script>
+<script>
+__JS_APP__
+</script>
+</body>
+</html>

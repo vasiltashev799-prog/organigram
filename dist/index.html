@@ -1,0 +1,885 @@
+<!doctype html>
+<html lang="bg">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BTL · Органиграми</title>
+<style>
+:root {
+  --ink: #0a1a33; --mist: #45556a; --ash: #6b7a8c; --line: #d5deea; --bg: #ffffff;
+  --soft: #f3f6fb; --accent: #0a6cff; --teal: #00b4e6; --radius: 24px;
+  --font: 'Noto Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body { font-family: var(--font); color: var(--ink); background: var(--bg); -webkit-font-smoothing: antialiased; }
+button, input, select, textarea { font-family: inherit; font-size: 14px; color: inherit; }
+
+/* chart surface */
+.oc-wrap { position: relative; overflow: hidden; background:
+  radial-gradient(circle at 1px 1px, #dfe6f0 1.2px, transparent 1.4px) 0 0 / 24px 24px, #fafcff; }
+.oc-svg { display: block; cursor: grab; touch-action: none; user-select: none; }
+.oc-svg.oc-drag { cursor: grabbing; }
+.oc-vp { transform-origin: 0 0; }
+.oc-node { cursor: pointer; }
+.oc-node rect { transition: stroke .15s, filter .15s; }
+.oc-node:hover rect { filter: drop-shadow(0 6px 14px rgba(10, 26, 51, .16)); }
+.oc-toggle { cursor: pointer; }
+.oc-toggle:hover circle { filter: drop-shadow(0 2px 6px rgba(10, 108, 255, .45)); }
+.oc-fade .oc-node { animation: ocin .28s ease both; }
+@keyframes ocin { from { opacity: 0; } to { opacity: 1; } }
+
+/* buttons */
+.btn { border: 1.5px solid var(--line); background: #fff; border-radius: 999px; padding: 8px 16px;
+  cursor: pointer; font-weight: 600; transition: all .15s; white-space: nowrap; }
+.btn:hover { border-color: var(--accent); color: var(--accent); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn.primary:hover { background: #0047b3; border-color: #0047b3; color: #fff; }
+.btn.icon { width: 38px; height: 38px; padding: 0; font-size: 18px; line-height: 1; }
+.seg { display: inline-flex; border: 1.5px solid var(--line); border-radius: 999px; overflow: hidden; background: #fff; }
+.seg button { border: 0; background: transparent; padding: 8px 14px; cursor: pointer; font-weight: 600; color: var(--mist); }
+.seg button.on { background: var(--ink); color: #fff; }
+.field { border: 1.5px solid var(--line); border-radius: 999px; padding: 8px 14px; background: #fff; outline: none; }
+.field:focus { border-color: var(--accent); }
+select.field { padding-right: 10px; }
+
+/* detail card */
+.detail { position: absolute; left: 16px; bottom: 16px; width: 300px; max-width: calc(100% - 32px);
+  background: #fff; border: 1.5px solid var(--line); border-radius: 20px; padding: 16px 18px;
+  box-shadow: 0 14px 40px rgba(10, 26, 51, .14); display: none; }
+.detail.show { display: block; }
+.detail h3 { margin: 0 0 2px; font-size: 17px; }
+.detail .d-title { color: var(--mist); margin-bottom: 10px; }
+.detail .d-row { display: flex; justify-content: space-between; gap: 12px; padding: 7px 0; border-top: 1px solid var(--soft); font-size: 13px; }
+.detail .d-row span { color: var(--ash); }
+.detail .d-row a { color: var(--accent); text-decoration: none; }
+.detail .close { position: absolute; right: 10px; top: 8px; border: 0; background: none; cursor: pointer; font-size: 20px; color: var(--ash); }
+.hint { position: absolute; right: 16px; bottom: 14px; font-size: 12px; color: var(--ash); pointer-events: none; }
+
+/* watermark */
+.wm { position: absolute; inset: 0; pointer-events: none; z-index: 5; }
+
+@media print {
+  .no-print { display: none !important; }
+  .oc-wrap { background: #fff !important; }
+}
+
+body { overflow: hidden; }
+.top { height: 62px; display: flex; align-items: center; gap: 10px; padding: 0 16px; border-bottom: 1px solid var(--line); background: #fff; }
+.brand { display: flex; align-items: baseline; gap: 8px; margin-right: 8px; }
+.logo { font-weight: 800; font-size: 20px; letter-spacing: -.02em; color: var(--accent); }
+.tag { font-size: 11px; letter-spacing: .1em; color: var(--ash); font-weight: 700; }
+.title { width: 280px; font-weight: 700; }
+.sp { flex: 1; }
+.main { display: flex; height: calc(100% - 62px); }
+.side { width: 380px; min-width: 260px; border-right: 1px solid var(--line); background: var(--soft); display: flex; flex-direction: column; padding: 14px; gap: 8px; }
+.side.hide { display: none; }
+.side-h { display: flex; justify-content: space-between; align-items: baseline; }
+.muted { color: var(--ash); font-size: 12px; }
+.help { margin: 0; font-size: 12px; line-height: 1.55; color: var(--mist); }
+kbd, code { background: #fff; border: 1px solid var(--line); border-radius: 6px; padding: 0 5px; font-size: 11.5px; font-family: ui-monospace, Consolas, monospace; }
+#ed { flex: 1; resize: none; border: 1.5px solid var(--line); border-radius: 16px; padding: 12px 14px; outline: none; background: #fff;
+  font: 13.5px/22px var(--font); white-space: pre; overflow: auto; tab-size: 2; }
+#ed:focus { border-color: var(--accent); }
+.warn { font-size: 12px; color: #b00020; min-height: 0; }
+.canvas { position: relative; flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.bar { display: flex; align-items: center; gap: 8px; padding: 10px 14px; flex-wrap: wrap; background: #fff; border-bottom: 1px solid var(--line); }
+.bar .field { width: 220px; }
+#stage { flex: 1; }
+
+.modal { position: fixed; inset: 0; background: rgba(10, 26, 51, .45); display: flex; align-items: center; justify-content: center; z-index: 50; padding: 16px; }
+.modal[hidden] { display: none; }
+.card { background: #fff; border-radius: var(--radius); padding: 28px; width: 520px; max-width: 100%; max-height: 100%; overflow: auto; box-shadow: 0 30px 80px rgba(10, 26, 51, .3); }
+.card h2 { margin: 0 0 4px; }
+.card p { margin: 0 0 16px; }
+.chk { display: flex; gap: 8px; align-items: center; font-weight: 600; margin-bottom: 10px; }
+.row { display: flex; gap: 8px; margin-bottom: 6px; }
+.row .field { flex: 1; font-family: ui-monospace, Consolas, monospace; }
+.field.full { width: 100%; border-radius: 14px; }
+.lbl { display: block; font-size: 12px; font-weight: 700; margin: 14px 0 6px; color: var(--mist); }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.note { font-size: 12px; color: var(--ash); margin-top: 4px; line-height: 1.5; }
+.actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 22px; flex-wrap: wrap; }
+#xmsg { margin-top: 12px; color: #00805f; font-weight: 600; }
+@media (max-width: 800px) { .side { width: 100%; position: absolute; z-index: 10; height: 50%; bottom: 0; } .title { width: 140px; } }
+
+</style>
+</head>
+<body>
+<header class="top no-print">
+  <div class="brand"><span class="logo">BTL</span><span class="tag">// ORGCHART</span></div>
+  <input class="field title" id="title" value="Органиграма" spellcheck="false" title="Име на органиграмата">
+  <div class="sp"></div>
+  <button class="btn" id="open">Отвори</button>
+  <button class="btn" id="save">Запази</button>
+  <button class="btn" id="csv" title="Колони: Име, Длъжност, Началник, Имейл, Телефон">Импорт CSV</button>
+  <button class="btn primary" id="export">Експорт за колеги</button>
+  <input type="file" id="fopen" accept=".json,application/json" hidden>
+  <input type="file" id="fcsv" accept=".csv,.txt,text/csv" hidden>
+</header>
+<main class="main">
+  <aside class="side no-print" id="side">
+    <div class="side-h">
+      <b>Структура</b>
+      <span id="count" class="muted"></span>
+    </div>
+    <p class="help">Един ред = един човек. <kbd>Tab</kbd> го прави подчинен, <kbd>Shift+Tab</kbd> го връща назад, <kbd>Enter</kbd> добавя колега, <kbd>Ctrl+Enter</kbd> добавя подчинен. Формат: <code>Име | Длъжност | Имейл | Телефон</code>. Може да поставите списък от Excel.</p>
+    <textarea id="ed" spellcheck="false" wrap="off"></textarea>
+    <div id="warn" class="warn"></div>
+  </aside>
+  <section class="canvas">
+    <div class="bar no-print">
+      <input class="field" id="q" placeholder="Търси човек или длъжност…">
+      <span id="mc" class="muted"></span>
+      <div class="seg" id="lay"><button data-m="lr" class="on">Хоризонтално</button><button data-m="tb">Вертикално</button></div>
+      <select class="field" id="lvl" title="Свий до ниво"></select>
+      <button class="btn icon" id="zi" title="Приближи">+</button>
+      <button class="btn icon" id="zo" title="Отдалечи">−</button>
+      <button class="btn" id="fit">Цялата</button>
+      <button class="btn icon" id="tog" title="Скрий/покажи панела">⇤</button>
+    </div>
+    <div id="stage" class="oc-wrap"></div>
+    <div class="detail no-print" id="detail"></div>
+    <div class="hint no-print">Влачи · колелце за zoom · клик на ● за свиване · клик върху карта сочи реда</div>
+  </section>
+</main>
+
+<div class="modal" id="modal" hidden>
+  <div class="card">
+    <h2>Експорт за колеги</h2>
+    <p class="muted">Създава се един HTML файл, който се отваря с двоен клик във всеки браузър — без инсталация и интернет.</p>
+    <label class="chk"><input type="checkbox" id="xenc" checked> Защити с парола (шифроване AES-256)</label>
+    <div id="xpwrow" class="row">
+      <input class="field" id="xpw" type="text" placeholder="Парола" autocomplete="off">
+      <button class="btn" id="xgen" type="button">Генерирай</button>
+    </div>
+    <div class="note" id="xnote">Паролата не може да се възстанови. Изпратете я по друг канал, не заедно с файла.</div>
+    <label class="lbl">Воден знак (напр. име на получателя) <span class="muted">— по желание</span></label>
+    <input class="field full" id="xwm" placeholder="напр. Иван Петров · поверително">
+    <div class="two">
+      <div><label class="lbl">Валиден до</label><input class="field full" id="xexp" type="date"></div>
+      <div><label class="lbl">Начален изглед</label>
+        <select class="field full" id="xlvl"></select></div>
+    </div>
+    <div class="actions">
+      <button class="btn" id="xcancel" type="button">Отказ</button>
+      <button class="btn" id="xsvg" type="button">SVG</button>
+      <button class="btn" id="xpng" type="button">PNG</button>
+      <button class="btn primary" id="xgo" type="button">Създай HTML файл</button>
+    </div>
+    <div class="note" id="xmsg"></div>
+  </div>
+</div>
+
+<script>
+window.__ASSETS = {"viewer":"<!doctype html>\n<html lang=\"bg\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n<meta name=\"robots\" content=\"noindex,nofollow\">\n<title>__TITLE__<\/title>\n<style>\n__CSS__\n.vh { position: absolute; left: 0; right: 0; top: 0; z-index: 4; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;\n  padding: 12px 16px; background: rgba(255, 255, 255, .92); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }\n.vh h1 { font-size: 16px; margin: 0 auto 0 0; display: flex; align-items: center; gap: 10px; }\n.vh h1 i { font-style: normal; font-size: 11px; letter-spacing: .08em; color: var(--accent); font-weight: 700; }\n.vh .field { width: 200px; }\n#stage { position: absolute; inset: 61px 0 0 0; }\n#lock { position: fixed; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center; background: var(--soft); padding: 16px; }\n#lock form { background: #fff; border: 1.5px solid var(--line); border-radius: var(--radius); padding: 32px; width: 380px; max-width: 100%;\n  box-shadow: 0 24px 60px rgba(10, 26, 51, .12); text-align: center; }\n#lock h2 { margin: 6px 0 4px; font-size: 20px; }\n#lock p { color: var(--mist); margin: 0 0 20px; font-size: 14px; }\n#lock .field { width: 100%; margin-bottom: 12px; text-align: center; }\n#lock .btn { width: 100%; padding: 11px; }\n#err { color: #b00020; font-size: 13px; min-height: 18px; margin-top: 10px; }\n.tag { font-size: 11px; letter-spacing: .1em; color: var(--accent); font-weight: 700; }\n<\/style>\n<\/head>\n<body>\n<div id=\"lock\">\n  <form id=\"lf\" autocomplete=\"off\">\n    <div class=\"tag\">BTL // ORGCHART<\/div>\n    <h2>Защитена органиграма<\/h2>\n    <p>Въведете паролата, която сте получили, за да видите съдържанието.<\/p>\n    <input class=\"field\" id=\"pw\" type=\"password\" placeholder=\"Парола\" autofocus>\n    <button class=\"btn primary\" type=\"submit\">Отключи<\/button>\n    <div id=\"err\"><\/div>\n  <\/form>\n<\/div>\n<div id=\"app\" style=\"display:none\">\n  <div class=\"vh no-print\">\n    <h1><i>ORG<\/i><span id=\"ttl\"><\/span><\/h1>\n    <input class=\"field\" id=\"q\" placeholder=\"Търси човек или длъжност…\">\n    <span id=\"mc\" style=\"font-size:12px;color:var(--ash);min-width:40px\"><\/span>\n    <div class=\"seg\" id=\"lay\"><button data-m=\"lr\" class=\"on\">Хоризонтално<\/button><button data-m=\"tb\">Вертикално<\/button><\/div>\n    <select class=\"field\" id=\"lvl\" title=\"Свий до ниво\"><\/select>\n    <button class=\"btn icon\" id=\"zi\" title=\"Приближи\">+<\/button>\n    <button class=\"btn icon\" id=\"zo\" title=\"Отдалечи\">−<\/button>\n    <button class=\"btn\" id=\"fit\">Цялата<\/button>\n    <button class=\"btn\" id=\"prn\">Печат<\/button>\n  <\/div>\n  <div id=\"stage\" class=\"oc-wrap\"><\/div>\n  <div class=\"detail no-print\" id=\"detail\"><\/div>\n  <div class=\"hint no-print\">Влачи · колелце за zoom · клик на ● за свиване · двоен клик върху карта<\/div>\n<\/div>\n<script>\n__CRYPTO__\n<\/script>\n<script>\n__CHART__\n<\/script>\n<script>\n(function () {\n  var PAYLOAD = __PAYLOAD__;\n  var chart;\n  function start(cfg) {\n    if (cfg.expires && new Date(cfg.expires + 'T23:59:59') < new Date()) {\n      document.getElementById('lock').innerHTML = '<form><div class=\"tag\">BTL // ORGCHART<\/div><h2>Срокът е изтекъл<\/h2><p>Този файл е валиден до ' + cfg.expires + '. Поискайте нова версия.<\/p><\/form>';\n      return;\n    }\n    document.getElementById('lock').style.display = 'none';\n    document.getElementById('app').style.display = 'block';\n    document.title = cfg.title;\n    document.getElementById('ttl').textContent = cfg.title;\n    var stage = document.getElementById('stage'), detail = document.getElementById('detail');\n    if (cfg.watermark) {\n      var t = String(cfg.watermark).replace(/[<>&\"]/g, '');\n      var svg = '<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"360\" height=\"220\"><text x=\"20\" y=\"130\" transform=\"rotate(-24 180 110)\" font-family=\"sans-serif\" font-size=\"17\" fill=\"#0a1a33\" fill-opacity=\".09\">' + t + '<\/text><\/svg>';\n      var w = document.createElement('div');\n      w.className = 'wm';\n      w.style.backgroundImage = 'url(\"data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg))) + '\")';\n      document.getElementById('app').appendChild(w);\n    }\n    chart = new OrgChart(stage, {\n      layout: cfg.layout || 'lr',\n      onSelect: function (n) {\n        if (!n) { detail.classList.remove('show'); return; }\n        detail.innerHTML = '<button class=\"close\" aria-label=\"Затвори\">×<\/button>' + OrgChart.detailHTML(n);\n        detail.classList.add('show');\n        detail.querySelector('.close').onclick = function () { chart.select(null); };\n      }\n    });\n    chart.setData(cfg.root);\n    var lvl = document.getElementById('lvl');\n    lvl.innerHTML = '<option value=\"-1\">Всички нива<\/option>';\n    for (var i = 1; i <= chart.maxDepth; i++) lvl.innerHTML += '<option value=\"' + i + '\">Свий след ниво ' + i + '<\/option>';\n    var startLvl = cfg.startLevel != null ? cfg.startLevel : (chart.all.length > 80 ? 2 : -1);\n    lvl.value = String(startLvl);\n    if (startLvl >= 0 && startLvl >= 1) chart.collapseToLevel(startLvl); else chart.fit();\n    lvl.onchange = function () { var v = +lvl.value; v < 0 ? chart.expandAll() : chart.collapseToLevel(v); };\n    document.getElementById('zi').onclick = function () { chart.zoomBy(1.3); };\n    document.getElementById('zo').onclick = function () { chart.zoomBy(1 / 1.3); };\n    document.getElementById('fit').onclick = function () { chart.fit(true); };\n    document.getElementById('prn').onclick = function () { chart.fit(); window.print(); };\n    var lay = document.getElementById('lay');\n    Array.prototype.forEach.call(lay.children, function (b) {\n      b.classList.toggle('on', b.dataset.m === chart.o.layout);\n      b.onclick = function () {\n        Array.prototype.forEach.call(lay.children, function (x) { x.classList.toggle('on', x === b); });\n        chart.setLayout(b.dataset.m);\n      };\n    });\n    var q = document.getElementById('q'), mc = document.getElementById('mc');\n    q.oninput = function () { var c = chart.search(q.value); mc.textContent = q.value ? (c ? '1/' + c : '0') : ''; };\n    q.onkeydown = function (e) { if (e.key === 'Enter') { var i = chart.next(); if (i) mc.textContent = i + '/' + chart.matches.length; } };\n  }\n  var form = document.getElementById('lf'), err = document.getElementById('err');\n  if (!PAYLOAD.enc) { start(PAYLOAD.data); return; }\n  form.onsubmit = function (e) {\n    e.preventDefault();\n    err.textContent = '';\n    var pw = document.getElementById('pw').value;\n    if (!window.crypto || !crypto.subtle) { err.textContent = 'Браузърът не поддържа нужната защита. Използвайте Chrome, Edge или Firefox.'; return; }\n    OCCrypto.decrypt(PAYLOAD, pw).then(function (txt) { start(JSON.parse(txt)); })\n      .catch(function () { err.textContent = 'Грешна парола.'; });\n  };\n})();\n<\/script>\n<\/body>\n<\/html>\n","css":":root {\n  --ink: #0a1a33; --mist: #45556a; --ash: #6b7a8c; --line: #d5deea; --bg: #ffffff;\n  --soft: #f3f6fb; --accent: #0a6cff; --teal: #00b4e6; --radius: 24px;\n  --font: 'Noto Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;\n}\n* { box-sizing: border-box; }\nhtml, body { height: 100%; margin: 0; }\nbody { font-family: var(--font); color: var(--ink); background: var(--bg); -webkit-font-smoothing: antialiased; }\nbutton, input, select, textarea { font-family: inherit; font-size: 14px; color: inherit; }\n\n/* chart surface */\n.oc-wrap { position: relative; overflow: hidden; background:\n  radial-gradient(circle at 1px 1px, #dfe6f0 1.2px, transparent 1.4px) 0 0 / 24px 24px, #fafcff; }\n.oc-svg { display: block; cursor: grab; touch-action: none; user-select: none; }\n.oc-svg.oc-drag { cursor: grabbing; }\n.oc-vp { transform-origin: 0 0; }\n.oc-node { cursor: pointer; }\n.oc-node rect { transition: stroke .15s, filter .15s; }\n.oc-node:hover rect { filter: drop-shadow(0 6px 14px rgba(10, 26, 51, .16)); }\n.oc-toggle { cursor: pointer; }\n.oc-toggle:hover circle { filter: drop-shadow(0 2px 6px rgba(10, 108, 255, .45)); }\n.oc-fade .oc-node { animation: ocin .28s ease both; }\n@keyframes ocin { from { opacity: 0; } to { opacity: 1; } }\n\n/* buttons */\n.btn { border: 1.5px solid var(--line); background: #fff; border-radius: 999px; padding: 8px 16px;\n  cursor: pointer; font-weight: 600; transition: all .15s; white-space: nowrap; }\n.btn:hover { border-color: var(--accent); color: var(--accent); }\n.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }\n.btn.primary:hover { background: #0047b3; border-color: #0047b3; color: #fff; }\n.btn.icon { width: 38px; height: 38px; padding: 0; font-size: 18px; line-height: 1; }\n.seg { display: inline-flex; border: 1.5px solid var(--line); border-radius: 999px; overflow: hidden; background: #fff; }\n.seg button { border: 0; background: transparent; padding: 8px 14px; cursor: pointer; font-weight: 600; color: var(--mist); }\n.seg button.on { background: var(--ink); color: #fff; }\n.field { border: 1.5px solid var(--line); border-radius: 999px; padding: 8px 14px; background: #fff; outline: none; }\n.field:focus { border-color: var(--accent); }\nselect.field { padding-right: 10px; }\n\n/* detail card */\n.detail { position: absolute; left: 16px; bottom: 16px; width: 300px; max-width: calc(100% - 32px);\n  background: #fff; border: 1.5px solid var(--line); border-radius: 20px; padding: 16px 18px;\n  box-shadow: 0 14px 40px rgba(10, 26, 51, .14); display: none; }\n.detail.show { display: block; }\n.detail h3 { margin: 0 0 2px; font-size: 17px; }\n.detail .d-title { color: var(--mist); margin-bottom: 10px; }\n.detail .d-row { display: flex; justify-content: space-between; gap: 12px; padding: 7px 0; border-top: 1px solid var(--soft); font-size: 13px; }\n.detail .d-row span { color: var(--ash); }\n.detail .d-row a { color: var(--accent); text-decoration: none; }\n.detail .close { position: absolute; right: 10px; top: 8px; border: 0; background: none; cursor: pointer; font-size: 20px; color: var(--ash); }\n.hint { position: absolute; right: 16px; bottom: 14px; font-size: 12px; color: var(--ash); pointer-events: none; }\n\n/* watermark */\n.wm { position: absolute; inset: 0; pointer-events: none; z-index: 5; }\n\n@media print {\n  .no-print { display: none !important; }\n  .oc-wrap { background: #fff !important; }\n}\n","chart":"/* OrgChart engine — shared by the editor and the exported viewer (no dependencies). */\r\n(function (global) {\r\n  'use strict';\r\n  var NS = 'http://www.w3.org/2000/svg';\r\n  var PALETTE = ['#0a6cff', '#00b4e6', '#00a88f', '#5b5bd6', '#e8590c', '#c2255c', '#2f9e44', '#9c36b5'];\r\n  var INK = '#0a1a33', MIST = '#45556a', ASH = '#6b7a8c', LINE = '#d5deea';\r\n  var FONT = \"'Noto Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif\";\r\n  var W = 236, H = 68, GAP_B = 18, GAP_D = 58;\r\n\r\n  function svg(tag, attrs, parent, text) {\r\n    var e = document.createElementNS(NS, tag);\r\n    if (attrs) for (var k in attrs) e.setAttribute(k, attrs[k]);\r\n    if (text != null) e.textContent = text;\r\n    if (parent) parent.appendChild(e);\r\n    return e;\r\n  }\r\n  function clip(s, n) { s = s || ''; return s.length > n ? s.slice(0, n - 1) + '…' : s; }\r\n  function initials(name) {\r\n    var p = (name || '?').trim().split(/\\s+/);\r\n    return ((p[0] || '?')[0] + (p.length > 1 ? p[p.length - 1][0] : '')).toUpperCase();\r\n  }\r\n  function esc(s) {\r\n    return String(s == null ? '' : s).replace(/[&<>\"']/g, function (c) {\r\n      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '\"': '&quot;', \"'\": '&#39;' }[c];\r\n    });\r\n  }\r\n\r\n  function OrgChart(container, opts) {\r\n    this.o = Object.assign({ layout: 'lr', onSelect: null }, opts || {});\r\n    this.container = container;\r\n    this.root = null;\r\n    this.collapsed = new Set();\r\n    this.selected = null;\r\n    this.matches = [];\r\n    this.matchIdx = -1;\r\n    this.query = '';\r\n    this.t = { x: 40, y: 40, k: 1 };\r\n    this.nodes = [];\r\n    this.svg = svg('svg', { width: '100%', height: '100%', class: 'oc-svg' }, container);\r\n    this.vp = svg('g', { class: 'oc-vp' }, this.svg);\r\n    this.gEdges = svg('g', null, this.vp);\r\n    this.gNodes = svg('g', null, this.vp);\r\n    this._bind();\r\n  }\r\n\r\n  var P = OrgChart.prototype;\r\n\r\n  /* ---------- data ---------- */\r\n  P.setData = function (root) {\r\n    this.root = root;\r\n    this._index();\r\n    this.render();\r\n  };\r\n\r\n  P._index = function () {\r\n    var list = [], id = 0, bc = 0;\r\n    (function walk(n, parent, depth, path, branch) {\r\n      n._id = id++;\r\n      n._parent = parent;\r\n      n._depth = depth;\r\n      n._path = path;\r\n      n.children = n.children || [];\r\n      if (depth === 1) branch = bc++;\r\n      n._branch = depth === 0 ? -1 : branch;\r\n      list.push(n);\r\n      var cnt = 0;\r\n      n.children.forEach(function (c) {\r\n        walk(c, n, depth + 1, path + '›' + c.name, branch);\r\n        cnt += 1 + c._count;\r\n      });\r\n      n._count = cnt;\r\n    })(this.root, null, 0, this.root.name, 0);\r\n    this.all = list;\r\n    this.maxDepth = list.reduce(function (m, n) { return Math.max(m, n._depth); }, 0);\r\n  };\r\n\r\n  P.color = function (n) { return n._branch < 0 ? INK : PALETTE[n._branch % PALETTE.length]; };\r\n\r\n  /* ---------- layout ---------- */\r\n  P._layout = function () {\r\n    var lr = this.o.layout === 'lr';\r\n    var bs = lr ? H : W, ds = lr ? W : H, self = this, vis = [];\r\n    function kids(n) { return self.collapsed.has(n._path) ? [] : n.children; }\r\n    function ext(n) {\r\n      var k = kids(n);\r\n      if (!k.length) return (n._ext = bs);\r\n      var sum = 0;\r\n      k.forEach(function (c) { sum += ext(c); });\r\n      sum += GAP_B * (k.length - 1);\r\n      return (n._ext = Math.max(bs, sum));\r\n    }\r\n    function place(n, start, depth) {\r\n      var k = kids(n);\r\n      n._vis = true;\r\n      vis.push(n);\r\n      var d = depth * (ds + GAP_D);\r\n      if (!k.length) n._b = start + n._ext / 2;\r\n      else {\r\n        var total = 0;\r\n        k.forEach(function (c) { total += c._ext; });\r\n        total += GAP_B * (k.length - 1);\r\n        var s = start + (n._ext - total) / 2;\r\n        k.forEach(function (c) { place(c, s, depth + 1); s += c._ext + GAP_B; });\r\n        n._b = (k[0]._b + k[k.length - 1]._b) / 2;\r\n      }\r\n      n.cx = lr ? d + ds / 2 : n._b;\r\n      n.cy = lr ? n._b : d + ds / 2;\r\n    }\r\n    this.all.forEach(function (n) { n._vis = false; });\r\n    ext(this.root);\r\n    place(this.root, 0, 0);\r\n    this.nodes = vis;\r\n    var b = { x1: 1e9, y1: 1e9, x2: -1e9, y2: -1e9 };\r\n    vis.forEach(function (n) {\r\n      b.x1 = Math.min(b.x1, n.cx - W / 2); b.x2 = Math.max(b.x2, n.cx + W / 2 + 14);\r\n      b.y1 = Math.min(b.y1, n.cy - H / 2); b.y2 = Math.max(b.y2, n.cy + H / 2 + 14);\r\n    });\r\n    this.bbox = b;\r\n  };\r\n\r\n  /* ---------- render ---------- */\r\n  P.render = function (fade) {\r\n    if (!this.root) return;\r\n    this._layout();\r\n    var self = this, lr = this.o.layout === 'lr', mset = new Set(this.matches);\r\n    this.gEdges.textContent = '';\r\n    this.gNodes.textContent = '';\r\n    this.svg.classList.toggle('oc-fade', !!fade);\r\n\r\n    this.nodes.forEach(function (n) {\r\n      if (!n._parent) return;\r\n      var p = n._parent, x1, y1, x2, y2, d;\r\n      if (lr) {\r\n        x1 = p.cx + W / 2; y1 = p.cy; x2 = n.cx - W / 2; y2 = n.cy;\r\n        var xm = (x1 + x2) / 2;\r\n        d = 'M' + x1 + ',' + y1 + ' C' + xm + ',' + y1 + ' ' + xm + ',' + y2 + ' ' + x2 + ',' + y2;\r\n      } else {\r\n        x1 = p.cx; y1 = p.cy + H / 2; x2 = n.cx; y2 = n.cy - H / 2;\r\n        var ym = (y1 + y2) / 2;\r\n        d = 'M' + x1 + ',' + y1 + ' C' + x1 + ',' + ym + ' ' + x2 + ',' + ym + ' ' + x2 + ',' + y2;\r\n      }\r\n      svg('path', { d: d, fill: 'none', stroke: self.color(n), 'stroke-opacity': '.45', 'stroke-width': '2' }, self.gEdges);\r\n    });\r\n\r\n    this.nodes.forEach(function (n) {\r\n      var col = self.color(n), root = n._depth === 0;\r\n      var g = svg('g', { class: 'oc-node', transform: 'translate(' + (n.cx - W / 2) + ',' + (n.cy - H / 2) + ')' }, self.gNodes);\r\n      g._node = n;\r\n      var sel = self.selected === n, hit = mset.has(n);\r\n      svg('rect', {\r\n        width: W, height: H, rx: 16,\r\n        fill: root ? INK : '#ffffff',\r\n        stroke: hit ? '#f59f00' : sel ? '#0a6cff' : LINE,\r\n        'stroke-width': hit || sel ? 3 : 1.5\r\n      }, g);\r\n      svg('circle', { cx: 34, cy: H / 2, r: 20, fill: root ? '#ffffff' : col }, g);\r\n      svg('text', {\r\n        x: 34, y: H / 2 + 5, 'text-anchor': 'middle', 'font-size': 13, 'font-weight': 700,\r\n        fill: root ? INK : '#fff', 'font-family': FONT\r\n      }, g, initials(n.name));\r\n      svg('text', {\r\n        x: 64, y: H / 2 - 4, 'font-size': 14, 'font-weight': 700,\r\n        fill: root ? '#fff' : INK, 'font-family': FONT\r\n      }, g, clip(n.name, 22));\r\n      svg('text', {\r\n        x: 64, y: H / 2 + 14, 'font-size': 11.5,\r\n        fill: root ? '#b7c6dc' : MIST, 'font-family': FONT\r\n      }, g, clip(n.title, 28));\r\n      svg('title', null, g, n.name + (n.title ? ' — ' + n.title : ''));\r\n      if (n.children.length) {\r\n        var col2 = self.collapsed.has(n._path);\r\n        var tx = lr ? W : W / 2, ty = lr ? H / 2 : H;\r\n        var t = svg('g', { class: 'oc-toggle', transform: 'translate(' + tx + ',' + ty + ')' }, g);\r\n        svg('circle', { r: 12, fill: col2 ? col : '#fff', stroke: col === INK ? '#0a6cff' : col, 'stroke-width': 2 }, t);\r\n        svg('text', {\r\n          y: 4, 'text-anchor': 'middle', 'font-size': col2 ? 10.5 : 15, 'font-weight': 700,\r\n          fill: col2 ? '#fff' : (col === INK ? '#0a6cff' : col), 'font-family': FONT\r\n        }, t, col2 ? String(n._count) : '−');\r\n        t._toggle = n;\r\n      }\r\n    });\r\n    this._applyT();\r\n  };\r\n\r\n  /* ---------- camera ---------- */\r\n  P._applyT = function () {\r\n    this.vp.style.transform = 'translate(' + this.t.x + 'px,' + this.t.y + 'px) scale(' + this.t.k + ')';\r\n  };\r\n  P._anim = function () {\r\n    var vp = this.vp;\r\n    vp.style.transition = 'transform .38s cubic-bezier(.2,.7,.2,1)';\r\n    clearTimeout(this._at);\r\n    this._at = setTimeout(function () { vp.style.transition = 'none'; }, 420);\r\n  };\r\n  P.fit = function (animate) {\r\n    if (!this.bbox) return;\r\n    var r = this.container.getBoundingClientRect(), b = this.bbox, pad = 40;\r\n    var bw = b.x2 - b.x1, bh = b.y2 - b.y1;\r\n    var k = Math.min((r.width - pad * 2) / bw, (r.height - pad * 2) / bh, 1.1);\r\n    k = Math.max(k, 0.05);\r\n    if (animate) this._anim();\r\n    this.t = { k: k, x: (r.width - bw * k) / 2 - b.x1 * k, y: (r.height - bh * k) / 2 - b.y1 * k };\r\n    this._applyT();\r\n  };\r\n  P.centerOn = function (n, k) {\r\n    var r = this.container.getBoundingClientRect();\r\n    k = k || Math.max(this.t.k, 0.9);\r\n    this._anim();\r\n    this.t = { k: k, x: r.width / 2 - n.cx * k, y: r.height / 2 - n.cy * k };\r\n    this._applyT();\r\n  };\r\n  P.zoomBy = function (f, cx, cy) {\r\n    var r = this.container.getBoundingClientRect();\r\n    cx = cx == null ? r.width / 2 : cx; cy = cy == null ? r.height / 2 : cy;\r\n    var k = Math.min(3, Math.max(0.04, this.t.k * f)), s = k / this.t.k;\r\n    this.t = { k: k, x: cx - (cx - this.t.x) * s, y: cy - (cy - this.t.y) * s };\r\n    this._applyT();\r\n  };\r\n\r\n  /* ---------- structure controls ---------- */\r\n  P.setLayout = function (mode) { this.o.layout = mode; this.render(); this.fit(true); };\r\n  P.collapseToLevel = function (lvl) {\r\n    var self = this;\r\n    this.collapsed.clear();\r\n    this.all.forEach(function (n) { if (n._depth >= lvl && n.children.length) self.collapsed.add(n._path); });\r\n    this.render(true); this.fit(true);\r\n  };\r\n  P.expandAll = function () { this.collapsed.clear(); this.render(true); this.fit(true); };\r\n  P.toggle = function (n) {\r\n    if (this.collapsed.has(n._path)) this.collapsed.delete(n._path); else this.collapsed.add(n._path);\r\n    this.render(true);\r\n  };\r\n  P.reveal = function (n) {\r\n    for (var p = n._parent; p; p = p._parent) this.collapsed.delete(p._path);\r\n  };\r\n  P.select = function (n, center) {\r\n    this.selected = n;\r\n    if (n) this.reveal(n);\r\n    this.render();\r\n    if (n && center) this.centerOn(n);\r\n    if (this.o.onSelect) this.o.onSelect(n);\r\n  };\r\n  P.find = function (pred) { return this.all.filter(pred)[0]; };\r\n\r\n  /* ---------- search ---------- */\r\n  P.search = function (q) {\r\n    q = (q || '').trim().toLowerCase();\r\n    this.query = q;\r\n    var self = this;\r\n    this.matches = q ? this.all.filter(function (n) {\r\n      return (n.name + ' ' + (n.title || '') + ' ' + (n.email || '') + ' ' + (n.phone || '')).toLowerCase().indexOf(q) >= 0;\r\n    }) : [];\r\n    this.matches.forEach(function (n) { self.reveal(n); });\r\n    this.matchIdx = -1;\r\n    this.render(true);\r\n    if (this.matches.length) this.next();\r\n    return this.matches.length;\r\n  };\r\n  P.next = function () {\r\n    if (!this.matches.length) return;\r\n    this.matchIdx = (this.matchIdx + 1) % this.matches.length;\r\n    var n = this.matches[this.matchIdx];\r\n    this.reveal(n);\r\n    this.render();\r\n    this.centerOn(n, Math.max(this.t.k, 0.9));\r\n    return this.matchIdx + 1;\r\n  };\r\n\r\n  /* ---------- pointer input ---------- */\r\n  P._bind = function () {\r\n    var self = this, s = this.svg, drag = null;\r\n    s.addEventListener('pointerdown', function (e) {\r\n      if (e.button !== 0) return;\r\n      drag = { x: e.clientX, y: e.clientY, tx: self.t.x, ty: self.t.y, moved: false };\r\n      s.setPointerCapture(e.pointerId);\r\n      self.vp.style.transition = 'none';\r\n    });\r\n    s.addEventListener('pointermove', function (e) {\r\n      if (!drag) return;\r\n      var dx = e.clientX - drag.x, dy = e.clientY - drag.y;\r\n      if (Math.abs(dx) + Math.abs(dy) > 4) drag.moved = true;\r\n      if (drag.moved) { self.t.x = drag.tx + dx; self.t.y = drag.ty + dy; self._applyT(); s.classList.add('oc-drag'); }\r\n    });\r\n    function end(e) {\r\n      if (!drag) return;\r\n      var moved = drag.moved;\r\n      drag = null;\r\n      s.classList.remove('oc-drag');\r\n      if (moved) return;\r\n      var t = e.target, tg = null, nd = null;\r\n      while (t && t !== s) {\r\n        if (t._toggle && !tg) tg = t._toggle;\r\n        if (t._node) { nd = t._node; break; }\r\n        t = t.parentNode;\r\n      }\r\n      if (tg) self.toggle(tg);\r\n      else if (nd) self.select(nd, false);\r\n      else if (self.selected) self.select(null);\r\n    }\r\n    s.addEventListener('pointerup', end);\r\n    s.addEventListener('pointercancel', function () { drag = null; });\r\n    s.addEventListener('dblclick', function (e) {\r\n      var t = e.target;\r\n      while (t && t !== s) {\r\n        if (t._node) { if (t._node.children.length) self.toggle(t._node); return; }\r\n        t = t.parentNode;\r\n      }\r\n    });\r\n    s.addEventListener('wheel', function (e) {\r\n      e.preventDefault();\r\n      var r = s.getBoundingClientRect();\r\n      self.vp.style.transition = 'none';\r\n      self.zoomBy(Math.exp(-e.deltaY * (e.ctrlKey ? 0.01 : 0.0016)), e.clientX - r.left, e.clientY - r.top);\r\n    }, { passive: false });\r\n    window.addEventListener('resize', function () { if (self.root) self.fit(); });\r\n  };\r\n\r\n  /* ---------- export helpers ---------- */\r\n  P.toSVG = function () {\r\n    var self = this, saveSel = this.selected, saveM = this.matches;\r\n    this.selected = null; this.matches = [];\r\n    this.render();\r\n    var b = this.bbox, pad = 30, w = b.x2 - b.x1 + pad * 2 - 14, h = b.y2 - b.y1 + pad * 2 - 14;\r\n    var clone = this.vp.cloneNode(true);\r\n    clone.style.transform = '';\r\n    clone.setAttribute('transform', 'translate(' + (pad - b.x1) + ',' + (pad - b.y1) + ')');\r\n    Array.prototype.forEach.call(clone.querySelectorAll('.oc-toggle'), function (t) { t.remove(); });\r\n    var out = '<svg xmlns=\"' + NS + '\" width=\"' + w + '\" height=\"' + h + '\" viewBox=\"0 0 ' + w + ' ' + h + '\">' +\r\n      '<rect width=\"100%\" height=\"100%\" fill=\"#ffffff\"/>' + new XMLSerializer().serializeToString(clone) + '<\/svg>';\r\n    this.selected = saveSel; this.matches = saveM;\r\n    this.render();\r\n    return { svg: out, width: w, height: h };\r\n  };\r\n\r\n  OrgChart.detailHTML = function (n) {\r\n    var rows = '';\r\n    if (n.title) rows += '<div class=\"d-title\">' + esc(n.title) + '<\/div>';\r\n    if (n.email) rows += '<div class=\"d-row\"><span>Имейл<\/span><a href=\"mailto:' + esc(n.email) + '\">' + esc(n.email) + '<\/a><\/div>';\r\n    if (n.phone) rows += '<div class=\"d-row\"><span>Телефон<\/span><a href=\"tel:' + esc(n.phone) + '\">' + esc(n.phone) + '<\/a><\/div>';\r\n    if (n._parent) rows += '<div class=\"d-row\"><span>Пряк ръководител<\/span><b>' + esc(n._parent.name) + '<\/b><\/div>';\r\n    if (n.children.length) rows += '<div class=\"d-row\"><span>Подчинени<\/span><b>' + n.children.length + ' директни · ' + n._count + ' общо<\/b><\/div>';\r\n    return '<h3>' + esc(n.name) + '<\/h3>' + rows;\r\n  };\r\n  OrgChart.esc = esc;\r\n  OrgChart.initials = initials;\r\n\r\n  global.OrgChart = OrgChart;\r\n})(window);\r\n","crypto":"/* Password encryption helpers: PBKDF2 (SHA-256) -> AES-GCM 256. Shared by the editor and exported viewer. */\n(function (global) {\n  'use strict';\n  var enc = new TextEncoder(), dec = new TextDecoder();\n  function b64(buf) {\n    var a = new Uint8Array(buf), s = '', i, n = 0x8000;\n    for (i = 0; i < a.length; i += n) s += String.fromCharCode.apply(null, a.subarray(i, i + n));\n    return btoa(s);\n  }\n  function unb64(s) {\n    var bin = atob(s), a = new Uint8Array(bin.length), i;\n    for (i = 0; i < bin.length; i++) a[i] = bin.charCodeAt(i);\n    return a;\n  }\n  function key(pw, salt, iter) {\n    return crypto.subtle.importKey('raw', enc.encode(pw), 'PBKDF2', false, ['deriveKey']).then(function (base) {\n      return crypto.subtle.deriveKey(\n        { name: 'PBKDF2', salt: salt, iterations: iter, hash: 'SHA-256' },\n        base, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);\n    });\n  }\n  global.OCCrypto = {\n    ITER: 250000,\n    encrypt: function (text, pw) {\n      var salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12)), iter = this.ITER;\n      return key(pw, salt, iter).then(function (k) {\n        return crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, k, enc.encode(text));\n      }).then(function (ct) { return { salt: b64(salt), iv: b64(iv), ct: b64(ct), iter: iter }; });\n    },\n    decrypt: function (p, pw) {\n      return key(pw, unb64(p.salt), p.iter).then(function (k) {\n        return crypto.subtle.decrypt({ name: 'AES-GCM', iv: unb64(p.iv) }, k, unb64(p.ct));\n      }).then(function (buf) { return dec.decode(buf); });\n    }\n  };\n})(window);\n"};
+</script>
+<script>
+/* Password encryption helpers: PBKDF2 (SHA-256) -> AES-GCM 256. Shared by the editor and exported viewer. */
+(function (global) {
+  'use strict';
+  var enc = new TextEncoder(), dec = new TextDecoder();
+  function b64(buf) {
+    var a = new Uint8Array(buf), s = '', i, n = 0x8000;
+    for (i = 0; i < a.length; i += n) s += String.fromCharCode.apply(null, a.subarray(i, i + n));
+    return btoa(s);
+  }
+  function unb64(s) {
+    var bin = atob(s), a = new Uint8Array(bin.length), i;
+    for (i = 0; i < bin.length; i++) a[i] = bin.charCodeAt(i);
+    return a;
+  }
+  function key(pw, salt, iter) {
+    return crypto.subtle.importKey('raw', enc.encode(pw), 'PBKDF2', false, ['deriveKey']).then(function (base) {
+      return crypto.subtle.deriveKey(
+        { name: 'PBKDF2', salt: salt, iterations: iter, hash: 'SHA-256' },
+        base, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+    });
+  }
+  global.OCCrypto = {
+    ITER: 250000,
+    encrypt: function (text, pw) {
+      var salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12)), iter = this.ITER;
+      return key(pw, salt, iter).then(function (k) {
+        return crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, k, enc.encode(text));
+      }).then(function (ct) { return { salt: b64(salt), iv: b64(iv), ct: b64(ct), iter: iter }; });
+    },
+    decrypt: function (p, pw) {
+      return key(pw, unb64(p.salt), p.iter).then(function (k) {
+        return crypto.subtle.decrypt({ name: 'AES-GCM', iv: unb64(p.iv) }, k, unb64(p.ct));
+      }).then(function (buf) { return dec.decode(buf); });
+    }
+  };
+})(window);
+
+</script>
+<script>
+/* OrgChart engine — shared by the editor and the exported viewer (no dependencies). */
+(function (global) {
+  'use strict';
+  var NS = 'http://www.w3.org/2000/svg';
+  var PALETTE = ['#0a6cff', '#00b4e6', '#00a88f', '#5b5bd6', '#e8590c', '#c2255c', '#2f9e44', '#9c36b5'];
+  var INK = '#0a1a33', MIST = '#45556a', ASH = '#6b7a8c', LINE = '#d5deea';
+  var FONT = "'Noto Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
+  var W = 236, H = 68, GAP_B = 18, GAP_D = 58;
+
+  function svg(tag, attrs, parent, text) {
+    var e = document.createElementNS(NS, tag);
+    if (attrs) for (var k in attrs) e.setAttribute(k, attrs[k]);
+    if (text != null) e.textContent = text;
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+  function clip(s, n) { s = s || ''; return s.length > n ? s.slice(0, n - 1) + '…' : s; }
+  function initials(name) {
+    var p = (name || '?').trim().split(/\s+/);
+    return ((p[0] || '?')[0] + (p.length > 1 ? p[p.length - 1][0] : '')).toUpperCase();
+  }
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  function OrgChart(container, opts) {
+    this.o = Object.assign({ layout: 'lr', onSelect: null }, opts || {});
+    this.container = container;
+    this.root = null;
+    this.collapsed = new Set();
+    this.selected = null;
+    this.matches = [];
+    this.matchIdx = -1;
+    this.query = '';
+    this.t = { x: 40, y: 40, k: 1 };
+    this.nodes = [];
+    this.svg = svg('svg', { width: '100%', height: '100%', class: 'oc-svg' }, container);
+    this.vp = svg('g', { class: 'oc-vp' }, this.svg);
+    this.gEdges = svg('g', null, this.vp);
+    this.gNodes = svg('g', null, this.vp);
+    this._bind();
+  }
+
+  var P = OrgChart.prototype;
+
+  /* ---------- data ---------- */
+  P.setData = function (root) {
+    this.root = root;
+    this._index();
+    this.render();
+  };
+
+  P._index = function () {
+    var list = [], id = 0, bc = 0;
+    (function walk(n, parent, depth, path, branch) {
+      n._id = id++;
+      n._parent = parent;
+      n._depth = depth;
+      n._path = path;
+      n.children = n.children || [];
+      if (depth === 1) branch = bc++;
+      n._branch = depth === 0 ? -1 : branch;
+      list.push(n);
+      var cnt = 0;
+      n.children.forEach(function (c) {
+        walk(c, n, depth + 1, path + '›' + c.name, branch);
+        cnt += 1 + c._count;
+      });
+      n._count = cnt;
+    })(this.root, null, 0, this.root.name, 0);
+    this.all = list;
+    this.maxDepth = list.reduce(function (m, n) { return Math.max(m, n._depth); }, 0);
+  };
+
+  P.color = function (n) { return n._branch < 0 ? INK : PALETTE[n._branch % PALETTE.length]; };
+
+  /* ---------- layout ---------- */
+  P._layout = function () {
+    var lr = this.o.layout === 'lr';
+    var bs = lr ? H : W, ds = lr ? W : H, self = this, vis = [];
+    function kids(n) { return self.collapsed.has(n._path) ? [] : n.children; }
+    function ext(n) {
+      var k = kids(n);
+      if (!k.length) return (n._ext = bs);
+      var sum = 0;
+      k.forEach(function (c) { sum += ext(c); });
+      sum += GAP_B * (k.length - 1);
+      return (n._ext = Math.max(bs, sum));
+    }
+    function place(n, start, depth) {
+      var k = kids(n);
+      n._vis = true;
+      vis.push(n);
+      var d = depth * (ds + GAP_D);
+      if (!k.length) n._b = start + n._ext / 2;
+      else {
+        var total = 0;
+        k.forEach(function (c) { total += c._ext; });
+        total += GAP_B * (k.length - 1);
+        var s = start + (n._ext - total) / 2;
+        k.forEach(function (c) { place(c, s, depth + 1); s += c._ext + GAP_B; });
+        n._b = (k[0]._b + k[k.length - 1]._b) / 2;
+      }
+      n.cx = lr ? d + ds / 2 : n._b;
+      n.cy = lr ? n._b : d + ds / 2;
+    }
+    this.all.forEach(function (n) { n._vis = false; });
+    ext(this.root);
+    place(this.root, 0, 0);
+    this.nodes = vis;
+    var b = { x1: 1e9, y1: 1e9, x2: -1e9, y2: -1e9 };
+    vis.forEach(function (n) {
+      b.x1 = Math.min(b.x1, n.cx - W / 2); b.x2 = Math.max(b.x2, n.cx + W / 2 + 14);
+      b.y1 = Math.min(b.y1, n.cy - H / 2); b.y2 = Math.max(b.y2, n.cy + H / 2 + 14);
+    });
+    this.bbox = b;
+  };
+
+  /* ---------- render ---------- */
+  P.render = function (fade) {
+    if (!this.root) return;
+    this._layout();
+    var self = this, lr = this.o.layout === 'lr', mset = new Set(this.matches);
+    this.gEdges.textContent = '';
+    this.gNodes.textContent = '';
+    this.svg.classList.toggle('oc-fade', !!fade);
+
+    this.nodes.forEach(function (n) {
+      if (!n._parent) return;
+      var p = n._parent, x1, y1, x2, y2, d;
+      if (lr) {
+        x1 = p.cx + W / 2; y1 = p.cy; x2 = n.cx - W / 2; y2 = n.cy;
+        var xm = (x1 + x2) / 2;
+        d = 'M' + x1 + ',' + y1 + ' C' + xm + ',' + y1 + ' ' + xm + ',' + y2 + ' ' + x2 + ',' + y2;
+      } else {
+        x1 = p.cx; y1 = p.cy + H / 2; x2 = n.cx; y2 = n.cy - H / 2;
+        var ym = (y1 + y2) / 2;
+        d = 'M' + x1 + ',' + y1 + ' C' + x1 + ',' + ym + ' ' + x2 + ',' + ym + ' ' + x2 + ',' + y2;
+      }
+      svg('path', { d: d, fill: 'none', stroke: self.color(n), 'stroke-opacity': '.45', 'stroke-width': '2' }, self.gEdges);
+    });
+
+    this.nodes.forEach(function (n) {
+      var col = self.color(n), root = n._depth === 0;
+      var g = svg('g', { class: 'oc-node', transform: 'translate(' + (n.cx - W / 2) + ',' + (n.cy - H / 2) + ')' }, self.gNodes);
+      g._node = n;
+      var sel = self.selected === n, hit = mset.has(n);
+      svg('rect', {
+        width: W, height: H, rx: 16,
+        fill: root ? INK : '#ffffff',
+        stroke: hit ? '#f59f00' : sel ? '#0a6cff' : LINE,
+        'stroke-width': hit || sel ? 3 : 1.5
+      }, g);
+      svg('circle', { cx: 34, cy: H / 2, r: 20, fill: root ? '#ffffff' : col }, g);
+      svg('text', {
+        x: 34, y: H / 2 + 5, 'text-anchor': 'middle', 'font-size': 13, 'font-weight': 700,
+        fill: root ? INK : '#fff', 'font-family': FONT
+      }, g, initials(n.name));
+      svg('text', {
+        x: 64, y: H / 2 - 4, 'font-size': 14, 'font-weight': 700,
+        fill: root ? '#fff' : INK, 'font-family': FONT
+      }, g, clip(n.name, 22));
+      svg('text', {
+        x: 64, y: H / 2 + 14, 'font-size': 11.5,
+        fill: root ? '#b7c6dc' : MIST, 'font-family': FONT
+      }, g, clip(n.title, 28));
+      svg('title', null, g, n.name + (n.title ? ' — ' + n.title : ''));
+      if (n.children.length) {
+        var col2 = self.collapsed.has(n._path);
+        var tx = lr ? W : W / 2, ty = lr ? H / 2 : H;
+        var t = svg('g', { class: 'oc-toggle', transform: 'translate(' + tx + ',' + ty + ')' }, g);
+        svg('circle', { r: 12, fill: col2 ? col : '#fff', stroke: col === INK ? '#0a6cff' : col, 'stroke-width': 2 }, t);
+        svg('text', {
+          y: 4, 'text-anchor': 'middle', 'font-size': col2 ? 10.5 : 15, 'font-weight': 700,
+          fill: col2 ? '#fff' : (col === INK ? '#0a6cff' : col), 'font-family': FONT
+        }, t, col2 ? String(n._count) : '−');
+        t._toggle = n;
+      }
+    });
+    this._applyT();
+  };
+
+  /* ---------- camera ---------- */
+  P._applyT = function () {
+    this.vp.style.transform = 'translate(' + this.t.x + 'px,' + this.t.y + 'px) scale(' + this.t.k + ')';
+  };
+  P._anim = function () {
+    var vp = this.vp;
+    vp.style.transition = 'transform .38s cubic-bezier(.2,.7,.2,1)';
+    clearTimeout(this._at);
+    this._at = setTimeout(function () { vp.style.transition = 'none'; }, 420);
+  };
+  P.fit = function (animate) {
+    if (!this.bbox) return;
+    var r = this.container.getBoundingClientRect(), b = this.bbox, pad = 40;
+    var bw = b.x2 - b.x1, bh = b.y2 - b.y1;
+    var k = Math.min((r.width - pad * 2) / bw, (r.height - pad * 2) / bh, 1.1);
+    k = Math.max(k, 0.05);
+    if (animate) this._anim();
+    this.t = { k: k, x: (r.width - bw * k) / 2 - b.x1 * k, y: (r.height - bh * k) / 2 - b.y1 * k };
+    this._applyT();
+  };
+  P.centerOn = function (n, k) {
+    var r = this.container.getBoundingClientRect();
+    k = k || Math.max(this.t.k, 0.9);
+    this._anim();
+    this.t = { k: k, x: r.width / 2 - n.cx * k, y: r.height / 2 - n.cy * k };
+    this._applyT();
+  };
+  P.zoomBy = function (f, cx, cy) {
+    var r = this.container.getBoundingClientRect();
+    cx = cx == null ? r.width / 2 : cx; cy = cy == null ? r.height / 2 : cy;
+    var k = Math.min(3, Math.max(0.04, this.t.k * f)), s = k / this.t.k;
+    this.t = { k: k, x: cx - (cx - this.t.x) * s, y: cy - (cy - this.t.y) * s };
+    this._applyT();
+  };
+
+  /* ---------- structure controls ---------- */
+  P.setLayout = function (mode) { this.o.layout = mode; this.render(); this.fit(true); };
+  P.collapseToLevel = function (lvl) {
+    var self = this;
+    this.collapsed.clear();
+    this.all.forEach(function (n) { if (n._depth >= lvl && n.children.length) self.collapsed.add(n._path); });
+    this.render(true); this.fit(true);
+  };
+  P.expandAll = function () { this.collapsed.clear(); this.render(true); this.fit(true); };
+  P.toggle = function (n) {
+    if (this.collapsed.has(n._path)) this.collapsed.delete(n._path); else this.collapsed.add(n._path);
+    this.render(true);
+  };
+  P.reveal = function (n) {
+    for (var p = n._parent; p; p = p._parent) this.collapsed.delete(p._path);
+  };
+  P.select = function (n, center) {
+    this.selected = n;
+    if (n) this.reveal(n);
+    this.render();
+    if (n && center) this.centerOn(n);
+    if (this.o.onSelect) this.o.onSelect(n);
+  };
+  P.find = function (pred) { return this.all.filter(pred)[0]; };
+
+  /* ---------- search ---------- */
+  P.search = function (q) {
+    q = (q || '').trim().toLowerCase();
+    this.query = q;
+    var self = this;
+    this.matches = q ? this.all.filter(function (n) {
+      return (n.name + ' ' + (n.title || '') + ' ' + (n.email || '') + ' ' + (n.phone || '')).toLowerCase().indexOf(q) >= 0;
+    }) : [];
+    this.matches.forEach(function (n) { self.reveal(n); });
+    this.matchIdx = -1;
+    this.render(true);
+    if (this.matches.length) this.next();
+    return this.matches.length;
+  };
+  P.next = function () {
+    if (!this.matches.length) return;
+    this.matchIdx = (this.matchIdx + 1) % this.matches.length;
+    var n = this.matches[this.matchIdx];
+    this.reveal(n);
+    this.render();
+    this.centerOn(n, Math.max(this.t.k, 0.9));
+    return this.matchIdx + 1;
+  };
+
+  /* ---------- pointer input ---------- */
+  P._bind = function () {
+    var self = this, s = this.svg, drag = null;
+    s.addEventListener('pointerdown', function (e) {
+      if (e.button !== 0) return;
+      drag = { x: e.clientX, y: e.clientY, tx: self.t.x, ty: self.t.y, moved: false };
+      s.setPointerCapture(e.pointerId);
+      self.vp.style.transition = 'none';
+    });
+    s.addEventListener('pointermove', function (e) {
+      if (!drag) return;
+      var dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+      if (Math.abs(dx) + Math.abs(dy) > 4) drag.moved = true;
+      if (drag.moved) { self.t.x = drag.tx + dx; self.t.y = drag.ty + dy; self._applyT(); s.classList.add('oc-drag'); }
+    });
+    function end(e) {
+      if (!drag) return;
+      var moved = drag.moved;
+      drag = null;
+      s.classList.remove('oc-drag');
+      if (moved) return;
+      var t = e.target, tg = null, nd = null;
+      while (t && t !== s) {
+        if (t._toggle && !tg) tg = t._toggle;
+        if (t._node) { nd = t._node; break; }
+        t = t.parentNode;
+      }
+      if (tg) self.toggle(tg);
+      else if (nd) self.select(nd, false);
+      else if (self.selected) self.select(null);
+    }
+    s.addEventListener('pointerup', end);
+    s.addEventListener('pointercancel', function () { drag = null; });
+    s.addEventListener('dblclick', function (e) {
+      var t = e.target;
+      while (t && t !== s) {
+        if (t._node) { if (t._node.children.length) self.toggle(t._node); return; }
+        t = t.parentNode;
+      }
+    });
+    s.addEventListener('wheel', function (e) {
+      e.preventDefault();
+      var r = s.getBoundingClientRect();
+      self.vp.style.transition = 'none';
+      self.zoomBy(Math.exp(-e.deltaY * (e.ctrlKey ? 0.01 : 0.0016)), e.clientX - r.left, e.clientY - r.top);
+    }, { passive: false });
+    window.addEventListener('resize', function () { if (self.root) self.fit(); });
+  };
+
+  /* ---------- export helpers ---------- */
+  P.toSVG = function () {
+    var self = this, saveSel = this.selected, saveM = this.matches;
+    this.selected = null; this.matches = [];
+    this.render();
+    var b = this.bbox, pad = 30, w = b.x2 - b.x1 + pad * 2 - 14, h = b.y2 - b.y1 + pad * 2 - 14;
+    var clone = this.vp.cloneNode(true);
+    clone.style.transform = '';
+    clone.setAttribute('transform', 'translate(' + (pad - b.x1) + ',' + (pad - b.y1) + ')');
+    Array.prototype.forEach.call(clone.querySelectorAll('.oc-toggle'), function (t) { t.remove(); });
+    var out = '<svg xmlns="' + NS + '" width="' + w + '" height="' + h + '" viewBox="0 0 ' + w + ' ' + h + '">' +
+      '<rect width="100%" height="100%" fill="#ffffff"/>' + new XMLSerializer().serializeToString(clone) + '</svg>';
+    this.selected = saveSel; this.matches = saveM;
+    this.render();
+    return { svg: out, width: w, height: h };
+  };
+
+  OrgChart.detailHTML = function (n) {
+    var rows = '';
+    if (n.title) rows += '<div class="d-title">' + esc(n.title) + '</div>';
+    if (n.email) rows += '<div class="d-row"><span>Имейл</span><a href="mailto:' + esc(n.email) + '">' + esc(n.email) + '</a></div>';
+    if (n.phone) rows += '<div class="d-row"><span>Телефон</span><a href="tel:' + esc(n.phone) + '">' + esc(n.phone) + '</a></div>';
+    if (n._parent) rows += '<div class="d-row"><span>Пряк ръководител</span><b>' + esc(n._parent.name) + '</b></div>';
+    if (n.children.length) rows += '<div class="d-row"><span>Подчинени</span><b>' + n.children.length + ' директни · ' + n._count + ' общо</b></div>';
+    return '<h3>' + esc(n.name) + '</h3>' + rows;
+  };
+  OrgChart.esc = esc;
+  OrgChart.initials = initials;
+
+  global.OrgChart = OrgChart;
+})(window);
+
+</script>
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var ed = $('ed'), titleEl = $('title'), stage = $('stage'), detail = $('detail');
+  var DRAFT = 'btl-orgchart-draft';
+
+  var SAMPLE = [
+    'Георги Стоянов | Изпълнителен директор | g.stoyanov@example.bg',
+    '  Мария Колева | Финансов директор',
+    '    Ивайло Петров | Главен счетоводител',
+    '      Десислава Ненова | Счетоводител',
+    '      Борислав Тодоров | Счетоводител',
+    '    Теодора Маринова | Финансов контрольор',
+    '  Николай Димитров | Директор Операции',
+    '    Радостин Христов | Мениджър Логистика',
+    '      Петър Алексиев | Ръководител склад',
+    '        Стела Йорданова | Складов оператор',
+    '        Калоян Илиев | Складов оператор',
+    '        Виолета Георгиева | Складов оператор',
+    '      Добрин Атанасов | Ръководител транспорт',
+    '        Емил Борисов | Шофьор',
+    '        Явор Събев | Шофьор',
+    '    Силвия Андонова | Мениджър Качество',
+    '      Нели Василева | Специалист качество',
+    '      Анжела Стефанова | Специалист качество',
+    '  Елена Радева | Директор Продажби',
+    '    Христо Пенчев | Регионален мениджър Север',
+    '      Мартин Ангелов | Търговски представител',
+    '      Ивана Куманова | Търговски представител',
+    '    Ралица Тенева | Регионален мениджър Юг',
+    '      Венцислав Русев | Търговски представител',
+    '      Гергана Попова | Търговски представител',
+    '    Александър Белев | Key Account Manager',
+    '  Виктор Събчев | Директор Човешки ресурси',
+    '    Полина Дончева | HR бизнес партньор',
+    '    Деница Цветанова | Специалист подбор',
+    '    Любомир Наков | Специалист обучение',
+    '  Анна Върбанова | ИТ директор',
+    '    Стоян Илчев | Системен администратор',
+    '    Кристина Бонева | Разработчик',
+    '    Димо Гочев | Разработчик'
+  ].join('\n');
+
+  /* ---------- outline <-> tree ---------- */
+  function parseOutline(text, docTitle) {
+    var lines = text.split('\n'), stack = [], roots = [], warn = [];
+    lines.forEach(function (raw, i) {
+      if (!raw.trim()) return;
+      var m = raw.match(/^[ \t]*/)[0], ind = 0, c;
+      for (c = 0; c < m.length; c++) ind += m[c] === '\t' ? 2 : 1;
+      var f = raw.trim().split('|').map(function (s) { return s.trim(); });
+      var node = { name: f[0] || '—', title: f[1] || '', email: f[2] || '', phone: f[3] || '', children: [], _line: i, _ind: ind };
+      while (stack.length && stack[stack.length - 1]._ind >= ind) stack.pop();
+      if (stack.length) stack[stack.length - 1].children.push(node); else roots.push(node);
+      stack.push(node);
+    });
+    var root;
+    if (roots.length === 1) root = roots[0];
+    else root = { name: docTitle || 'Организация', title: roots.length ? '' : 'Добавете хора в панела вляво', children: roots, _line: -1, virtual: true };
+    if (roots.length > 1) warn.push('Има ' + roots.length + ' върха — те са групирани под „' + root.name + '“.');
+    return { root: root, warn: warn };
+  }
+
+  function plain(n) {
+    return { name: n.name, title: n.title, email: n.email, phone: n.phone, children: n.children.map(plain) };
+  }
+
+  function toOutline(n, depth, out) {
+    out.push('  '.repeat(depth) + [n.name, n.title, n.email, n.phone].join(' | ').replace(/(\s\|\s)+$/, ''));
+    n.children.forEach(function (c) { toOutline(c, depth + 1, out); });
+    return out;
+  }
+
+  /* ---------- chart ---------- */
+  var selecting = false;
+  var chart = new OrgChart(stage, {
+    layout: 'lr',
+    onSelect: function (n) {
+      if (selecting) return;
+      if (!n) { detail.classList.remove('show'); return; }
+      detail.innerHTML = '<button class="close" aria-label="Затвори">×</button>' + OrgChart.detailHTML(n);
+      detail.classList.add('show');
+      detail.querySelector('.close').onclick = function () { chart.select(null); };
+      if (n._line >= 0) gotoLine(n._line);
+    }
+  });
+
+  function lineStart(idx) {
+    var v = ed.value, p = 0;
+    while (idx-- > 0) { p = v.indexOf('\n', p) + 1; if (p === 0) return v.length; }
+    return p;
+  }
+  function gotoLine(idx) {
+    var s = lineStart(idx), e = ed.value.indexOf('\n', s);
+    if (e < 0) e = ed.value.length;
+    ed.focus({ preventScroll: true });
+    ed.setSelectionRange(e, e);
+    ed.scrollTop = Math.max(0, idx * 22 - ed.clientHeight / 2);
+    lastLine = idx;
+  }
+  function caretLine() { return ed.value.slice(0, ed.selectionStart).split('\n').length - 1; }
+
+  var lastLine = -1, tmr;
+  function refresh(first) {
+    var res = parseOutline(ed.value, titleEl.value);
+    var sel = chart.selected ? chart.selected._line : -1;
+    chart.setData(res.root);
+    var again = sel >= 0 ? chart.find(function (n) { return n._line === sel; }) : null;
+    if (again) { chart.selected = again; chart.render(); }
+    $('count').textContent = chart.all.filter(function (n) { return !n.virtual; }).length + ' души · ' + (chart.maxDepth + 1) + ' нива';
+    $('warn').textContent = res.warn.join(' ');
+    fillLevels();
+    if (first) autoCollapse();
+    try { localStorage.setItem(DRAFT, JSON.stringify({ title: titleEl.value, text: ed.value })); } catch (e) {}
+  }
+  function fillLevels() {
+    var v = $('lvl').value, html = '<option value="-1">Всички нива</option>';
+    for (var i = 1; i <= chart.maxDepth; i++) html += '<option value="' + i + '">Свий след ниво ' + i + '</option>';
+    $('lvl').innerHTML = html;
+    $('lvl').value = v && $('lvl').querySelector('option[value="' + v + '"]') ? v : '-1';
+    $('xlvl').innerHTML = html.replace('Всички нива', 'Всичко разгънато');
+  }
+  function autoCollapse() {
+    if (chart.all.length > 80) { $('lvl').value = '2'; chart.collapseToLevel(2); } else chart.fit();
+  }
+  function schedule() { clearTimeout(tmr); tmr = setTimeout(function () { refresh(false); }, 140); }
+
+  ed.addEventListener('input', schedule);
+  titleEl.addEventListener('input', schedule);
+  function onCaret() {
+    var l = caretLine();
+    if (l === lastLine) return;
+    lastLine = l;
+    var n = chart.find(function (x) { return x._line === l; });
+    if (!n) return;
+    selecting = true;
+    chart.select(n, true);
+    selecting = false;
+    detail.innerHTML = '<button class="close" aria-label="Затвори">×</button>' + OrgChart.detailHTML(n);
+    detail.classList.add('show');
+    detail.querySelector('.close').onclick = function () { chart.select(null); };
+  }
+  ed.addEventListener('click', onCaret);
+  ed.addEventListener('keyup', function (e) {
+    if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End'].indexOf(e.key) >= 0) onCaret();
+  });
+
+  ed.addEventListener('keydown', function (e) {
+    var v = ed.value, s = ed.selectionStart, en = ed.selectionEnd;
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      var a = v.lastIndexOf('\n', s - 1) + 1, b = en;
+      if (b > s && v[b - 1] === '\n') b--;
+      var blockEnd = v.indexOf('\n', b); if (blockEnd < 0) blockEnd = v.length;
+      var block = v.slice(a, blockEnd).split('\n');
+      var out = block.map(function (l) { return e.shiftKey ? l.replace(/^(\t|  ?)/, '') : '  ' + l; });
+      var diffFirst = out[0].length - block[0].length;
+      ed.setRangeText(out.join('\n'), a, blockEnd, 'preserve');
+      ed.setSelectionRange(Math.max(a, s + diffFirst), a + out.join('\n').length - (blockEnd - en > 0 ? 0 : 0));
+      if (s === en) ed.setSelectionRange(Math.max(a, s + diffFirst), Math.max(a, s + diffFirst));
+      schedule();
+    } else if (e.key === 'Enter' && s === en) {
+      e.preventDefault();
+      var ls = v.lastIndexOf('\n', s - 1) + 1, cur = v.slice(ls, s);
+      var ind = cur.match(/^[ \t]*/)[0] + (e.ctrlKey || e.metaKey ? '  ' : '');
+      ed.setRangeText('\n' + ind, s, en, 'end');
+      schedule(); onCaretSoon();
+    }
+  });
+  function onCaretSoon() { setTimeout(onCaret, 0); }
+
+  /* ---------- toolbar ---------- */
+  $('zi').onclick = function () { chart.zoomBy(1.3); };
+  $('zo').onclick = function () { chart.zoomBy(1 / 1.3); };
+  $('fit').onclick = function () { chart.fit(true); };
+  $('tog').onclick = function () { $('side').classList.toggle('hide'); setTimeout(function () { chart.fit(true); }, 30); };
+  $('lvl').onchange = function () { var v = +$('lvl').value; v < 0 ? chart.expandAll() : chart.collapseToLevel(v); };
+  var lay = $('lay');
+  Array.prototype.forEach.call(lay.children, function (b) {
+    b.onclick = function () {
+      Array.prototype.forEach.call(lay.children, function (x) { x.classList.toggle('on', x === b); });
+      chart.setLayout(b.dataset.m);
+    };
+  });
+  var q = $('q'), mc = $('mc');
+  q.oninput = function () { var c = chart.search(q.value); mc.textContent = q.value ? (c ? '1/' + c : '0 намерени') : ''; };
+  q.onkeydown = function (e) { if (e.key === 'Enter') { var i = chart.next(); if (i) mc.textContent = i + '/' + chart.matches.length; } };
+
+  /* ---------- files ---------- */
+  function download(name, blob) {
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
+  }
+  function fname(ext) { return (titleEl.value.trim() || 'organigrama').replace(/[\\/:*?"<>|]+/g, '_') + ext; }
+  function readFile(file, cb) { var r = new FileReader(); r.onload = function () { cb(String(r.result)); }; r.readAsText(file, 'utf-8'); }
+
+  $('save').onclick = function () {
+    download(fname('.json'), new Blob([JSON.stringify({ app: 'btl-orgchart', v: 1, title: titleEl.value, text: ed.value }, null, 1)], { type: 'application/json' }));
+  };
+  $('open').onclick = function () { $('fopen').click(); };
+  $('fopen').onchange = function (e) {
+    var f = e.target.files[0]; if (!f) return;
+    readFile(f, function (t) {
+      try { var d = JSON.parse(t); ed.value = d.text; titleEl.value = d.title || 'Органиграма'; chart.selected = null; chart.collapsed.clear(); refresh(true); }
+      catch (err) { alert('Файлът не е валидна органиграма.'); }
+    });
+    e.target.value = '';
+  };
+
+  function parseCSV(t) {
+    var first = t.split('\n')[0], d = [';', '\t', ','].sort(function (a, b) { return first.split(b).length - first.split(a).length; })[0];
+    var rows = [], row = [], cell = '', inq = false, i, c;
+    t = t.replace(/^﻿/, '');
+    for (i = 0; i < t.length; i++) {
+      c = t[i];
+      if (inq) { if (c === '"') { if (t[i + 1] === '"') { cell += '"'; i++; } else inq = false; } else cell += c; }
+      else if (c === '"') inq = true;
+      else if (c === d) { row.push(cell); cell = ''; }
+      else if (c === '\n' || c === '\r') { if (c === '\r' && t[i + 1] === '\n') i++; row.push(cell); rows.push(row); row = []; cell = ''; }
+      else cell += c;
+    }
+    row.push(cell); rows.push(row);
+    return rows.filter(function (r) { return r.some(function (x) { return x.trim(); }); });
+  }
+  function csvToOutline(t) {
+    var rows = parseCSV(t), h = rows[0].map(function (x) { return x.trim().toLowerCase(); });
+    function col(re, def) { var i = h.findIndex(function (x) { return re.test(x); }); return i >= 0 ? i : def; }
+    var hasHead = h.some(function (x) { return /име|name|длъжност|title|position|началник|manager|шеф|parent/.test(x); });
+    var cn = hasHead ? col(/име|name/, 0) : 0, ct = hasHead ? col(/длъжност|title|position/, 1) : 1,
+        cm = hasHead ? col(/началник|ръководител|manager|шеф|parent|boss/, 2) : 2,
+        ce = hasHead ? col(/имейл|email|e-mail|поща/, 3) : 3, cp = hasHead ? col(/телефон|phone|тел/, 4) : 4;
+    if (hasHead) rows = rows.slice(1);
+    var byName = {}, list = rows.map(function (r) {
+      var o = { name: (r[cn] || '').trim(), title: (r[ct] || '').trim(), mgr: (r[cm] || '').trim(), email: (r[ce] || '').trim(), phone: (r[cp] || '').trim(), children: [] };
+      byName[o.name] = o; return o;
+    }).filter(function (o) { return o.name; });
+    var roots = [];
+    list.forEach(function (o) {
+      var p = o.mgr && byName[o.mgr];
+      var loop = false, x = p;
+      for (var g = 0; x && g < 1000; g++) { if (x === o) { loop = true; break; } x = byName[x.mgr]; }
+      if (p && p !== o && !loop) p.children.push(o); else roots.push(o);
+    });
+    return roots.map(function (r) { return toOutline(r, 0, []).join('\n'); }).join('\n');
+  }
+  $('csv').onclick = function () { $('fcsv').click(); };
+  $('fcsv').onchange = function (e) {
+    var f = e.target.files[0]; if (!f) return;
+    readFile(f, function (t) {
+      try { ed.value = csvToOutline(t); chart.selected = null; chart.collapsed.clear(); refresh(true); }
+      catch (err) { alert('Неуспешен импорт на CSV.'); }
+    });
+    e.target.value = '';
+  };
+
+  /* ---------- export ---------- */
+  var modal = $('modal');
+  $('export').onclick = function () { $('xmsg').textContent = ''; modal.hidden = false; };
+  $('xcancel').onclick = function () { modal.hidden = true; };
+  modal.addEventListener('click', function (e) { if (e.target === modal) modal.hidden = true; });
+  $('xenc').onchange = function () { $('xpwrow').style.display = $('xenc').checked ? 'flex' : 'none'; };
+  $('xgen').onclick = function () {
+    var al = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789', b = crypto.getRandomValues(new Uint8Array(14)), s = '';
+    for (var i = 0; i < b.length; i++) { s += al[b[i] % al.length]; if (i === 4 || i === 9) s += '-'; }
+    $('xpw').value = s;
+  };
+  function esc(s) { return OrgChart.esc(s); }
+  function safeJSON(o) { return JSON.stringify(o).split('<').join(String.fromCharCode(92) + 'u003c'); }
+
+  $('xgo').onclick = function () {
+    var enc = $('xenc').checked, pw = $('xpw').value, A = window.__ASSETS;
+    if (enc && pw.length < 6) { $('xmsg').style.color = '#b00020'; $('xmsg').textContent = 'Паролата трябва да е поне 6 знака.'; return; }
+    if (!enc && !confirm('Файлът ще е без парола — всеки, който го получи, ще вижда всичко. Продължавате ли?')) return;
+    $('xmsg').style.color = '#00805f'; $('xmsg').textContent = 'Създавам…';
+    var res = parseOutline(ed.value, titleEl.value);
+    var cfg = {
+      title: titleEl.value.trim() || 'Органиграма', root: plain(res.root), layout: chart.o.layout,
+      watermark: $('xwm').value.trim(), expires: $('xexp').value, startLevel: +$('xlvl').value
+    };
+    var done = function (payload) {
+      var map = {
+        __TITLE__: esc(enc ? 'Защитена органиграма' : cfg.title), __CSS__: A.css, __CRYPTO__: A.crypto,
+        __CHART__: A.chart, __PAYLOAD__: safeJSON(payload)
+      };
+      var html = A.viewer.replace(/__(TITLE|CSS|CRYPTO|CHART|PAYLOAD)__/g, function (m) { return map[m]; });
+      download(fname('.html'), new Blob([html], { type: 'text/html' }));
+      $('xmsg').textContent = 'Готово — файлът е изтеглен' + (enc ? '. Паролата: ' + pw : '.');
+    };
+    if (enc) OCCrypto.encrypt(JSON.stringify(cfg), pw).then(function (p) { p.enc = true; done(p); })
+      .catch(function (e) { $('xmsg').style.color = '#b00020'; $('xmsg').textContent = 'Грешка: ' + e.message; });
+    else done({ enc: false, data: cfg });
+  };
+  $('xsvg').onclick = function () { download(fname('.svg'), new Blob([chart.toSVG().svg], { type: 'image/svg+xml' })); };
+  $('xpng').onclick = function () {
+    var o = chart.toSVG(), sc = Math.min(2, 16000 / Math.max(o.width, o.height)), img = new Image();
+    img.onload = function () {
+      var c = document.createElement('canvas'); c.width = Math.round(o.width * sc); c.height = Math.round(o.height * sc);
+      var x = c.getContext('2d'); x.scale(sc, sc); x.drawImage(img, 0, 0);
+      c.toBlob(function (b) { download(fname('.png'), b); });
+    };
+    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(o.svg);
+  };
+
+  /* ---------- start ---------- */
+  var saved = null;
+  try { saved = JSON.parse(localStorage.getItem(DRAFT) || 'null'); } catch (e) {}
+  if (saved && saved.text) { ed.value = saved.text; titleEl.value = saved.title || 'Органиграма'; }
+  else { ed.value = SAMPLE; titleEl.value = 'БТЛ — примерна структура'; }
+  refresh(true);
+  $('xwm').value = '';
+})();
+
+</script>
+</body>
+</html>
