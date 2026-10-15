@@ -60,12 +60,6 @@ body[data-bg=night] #brand img { filter: brightness(0) invert(1); }
 .port:hover { transform: scale(1.35); background: var(--accent); }
 .p0 { left: calc(50% - 7px); top: -7px; } .p1 { right: -7px; top: calc(50% - 7px); }
 .p2 { left: calc(50% - 7px); bottom: -7px; } .p3 { left: -7px; top: calc(50% - 7px); }
-.badge { position: absolute; right: 14px; bottom: -13px; height: 26px; min-width: 42px; padding: 0 11px; border-radius: 13px; z-index: 3;
-  font: 600 12px var(--font); letter-spacing: .04em; cursor: pointer; border: 1px solid var(--accent); background: #fff; color: var(--accent); display: none;
-  transition: box-shadow .3s, background .3s; }
-.badge:hover { box-shadow: 0 8px 20px -6px rgba(10,108,255,.55); }
-.badge.on { display: block; }
-.badge.closed { background: var(--accent); color: #fff; }
 
 .marquee { position: fixed; border: 1px solid var(--accent); background: rgba(10,108,255,.08); border-radius: 8px; z-index: 5; pointer-events: none; display: none; }
 
@@ -93,10 +87,17 @@ button:focus-visible, .sw:focus-visible { outline: 2px solid var(--accent); outl
 #iconmenu button:hover { background: rgba(10,108,255,.1); }
 #nbar .tbtn { height: 32px; min-width: 32px; padding: 0 12px; font-size: 11px; }
 #nbar #nDel:hover { color: #d92d20; background: rgba(217,45,32,.08); }
-#rmenu { width: 210px; }
+#rmenu { width: 236px; }
+#rmenu .mt { font: 600 11px var(--font); letter-spacing: .08em; text-transform: uppercase; color: var(--ash); padding: 4px 6px 8px; }
+#rmenu .sws { display: flex; flex-wrap: wrap; gap: 7px; align-items: center; padding: 0 6px 8px; }
+#rmenu .auto { height: 24px; min-width: 0; padding: 0 9px; font-size: 10px; }
+#rmenu .mrow { display: flex; align-items: center; gap: 10px; padding: 6px; font: 400 13px var(--font); color: var(--ink); }
+#rmenu .mrow span { width: 68px; flex: none; }
+#rmenu .mrow input[type=color] { width: 36px; height: 26px; padding: 0; border: 1px solid var(--line); border-radius: 8px; background: transparent; cursor: pointer; }
+#rmenu .mrow input[type=range] { flex: 1; min-width: 0; accent-color: var(--accent); }
+#rmenu .mrow b { width: 24px; text-align: right; font-weight: 500; flex: none; }
 #rmenu .row { display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 10px; border: 0; background: transparent; color: var(--ink); font: 400 14px var(--font); border-radius: 12px; cursor: pointer; text-align: left; }
 #rmenu .row:hover { background: rgba(10,108,255,.08); }
-#rmenu .chip { width: 38px; height: 8px; border-radius: 4px; flex: none; }
 #rmenu .del { color: #d92d20; }
 #help { left: 50%; bottom: 86px; transform: translateX(-50%); width: min(440px, calc(100% - 24px)); padding: 20px 22px; font-size: 14px; font-weight: 300; line-height: 1.6; color: var(--mist); }
 #help h3 { margin: 0 0 8px; font-size: 22px; font-weight: 400; letter-spacing: -0.02em; color: var(--ink); }
@@ -118,14 +119,12 @@ body[data-bg=void] #brand img, body[data-bg=night] #brand img { filter: brightne
 .title { font-size: 18px; font-weight: 400; letter-spacing: -0.03em; }
 .name { font-weight: 200; font-size: 13.5px; }
 .note { font-weight: 200; }
-body[data-bg=void] .badge, body[data-bg=night] .badge { background: #000; }
-body[data-bg=void] .badge.closed, body[data-bg=night] .badge.closed { background: var(--accent); }
 body[data-bg=void] .port, body[data-bg=night] .port { background: #000; }
 body[data-bg=void] .port:hover, body[data-bg=night] .port:hover { background: var(--accent); }
 body[data-bg=void] #nbar #nDel:hover { color: #ff7a6e; }
 </style>
 </head>
-<body data-bg="void">
+<body data-bg="light">
 <div id="vp"><canvas id="fx"></canvas><canvas id="links"></canvas><div id="world"></div><canvas id="knots"></canvas></div>
 <div id="vig"></div>
 <div id="brand"><img src="data:image/png;base64,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" alt="BTL"><i></i><span>Органиграма</span></div>
@@ -143,9 +142,9 @@ body[data-bg=void] #nbar #nDel:hover { color: #ff7a6e; }
   <h3>Как се работи</h3>
   <ul>
     <li>Влачи от синя точка на звено до друго звено, за да свържеш две звена. Първото е родител, второто е подчинено.</li>
-    <li>Двоен клик върху звено го редактира. Двоен клик върху празно място добавя ново.</li>
+    <li>Редакция: избери звено и натисни „Редактирай“. Двоен клик върху празно място добавя ново звено.</li>
     <li>Клик върху връзка: смяна на цвета или изтриване. Бутонът „Ъглова" сменя вида: ъглова, крива, права.</li>
-    <li>Значката най-долу на звеното скрива или показва клона му.</li>
+    <li>Клик върху звено показва или скрива клона му.</li>
     <li>Shift+клик или Shift+рамка избира няколко звена. Влача ги заедно или свържи всички към едно звено.</li>
     <li>Празно място: влачене за преместване, колелце за мащаб. Ctrl+Z и Ctrl+Y връщат и повтарят.</li>
   </ul>
@@ -153,18 +152,21 @@ body[data-bg=void] #nbar #nDel:hover { color: #ff7a6e; }
 
 <div id="bar">
   <button id="add" class="primary">+ Добави</button>
+  <button id="edit" title="Редактирай избраното звено (или двоен клик)">Редактирай</button>
   <button id="arr" title="Подреди като дърво">Подреди</button>
   <button id="fit" title="Покажи всичко">Побери</button>
   <span class="sep"></span>
   <button id="undo" title="Назад (Ctrl+Z)" aria-label="Назад">↶</button>
   <button id="redo" title="Напред (Ctrl+Y)" aria-label="Напред">↷</button>
   <button id="conn" title="Смени вида на връзките">Ъглова</button>
+  <button id="lstyle" title="Цвят и блясък на всички връзки">Цвят</button>
   <span class="sep"></span>
   <button class="bgb" data-bg="void" title="Празнота" aria-label="Празнота" style="background:radial-gradient(circle at 35% 35%,#0a6cff 0,#000 60%)"></button>
   <button class="bgb" data-bg="white" title="Бяло" aria-label="Бяло" style="background:#fff;box-shadow:inset 0 0 0 1px rgba(10,26,51,.25)"></button>
   <button class="bgb" data-bg="light" title="Светло" aria-label="Светло" style="background:#fff"></button>
   <button class="bgb" data-bg="night" title="Нощ" aria-label="Нощ" style="background:radial-gradient(circle at 30% 30%,#3d8bff,#050d1c 70%)"></button>
   <span class="sep"></span>
+  <button id="pdf" title="Свали като PDF">PDF</button>
   <button id="exp" title="Свали като JSON">Запази</button>
   <button id="imp" title="Зареди от JSON">Зареди</button>
   <button id="helpb" title="Помощ" aria-label="Помощ">?</button>
@@ -181,19 +183,14 @@ const uid = () => Math.random().toString(36).slice(2, 8);
 const NW = 200;
 const COLORS = ['#0a6cff', '#00b4e6', '#6d5dfc', '#12b886', '#f59f00', '#e8590c', '#0a1a33'];
 const ICONS = ['👤','🏢','⚙️','💼','📣','🧪','🛠️','📦','💰','🎯','🧭','⚓'];
-const LINES = {
-  slate: { n: 'Графит',       base: '#5b6b80', hi: '#a9b6c9' },
-  blue:  { n: 'Синьо',        base: '#0a6cff', hi: '#6fa8ff' },
-  navy:  { n: 'Тъмно синьо',  base: '#0a1a33', hi: '#7f97bd' },
-  teal:  { n: 'Тюркоаз',      base: '#0087ad', hi: '#6fdcf5' },
-  silver:{ n: 'Сребро',       base: '#9aa7b8', hi: '#dfe6f0' },
-};
+const LINK_COLORS = ['#5b6b80', '#0a6cff', '#00b4e6', '#6d5dfc', '#12b886', '#f59f00', '#e8590c', '#0a1a33', '#ffffff'];
+const defLinkColor = () => (isLight() ? '#5b6b80' : '#a9b6c9');
 const KEY = 'ropechart.v3';
 
 /* ---------- модел ---------- */
 let S = { nodes: [], edges: [], collapsed: [] };
 let view = { x: 0, y: 0, z: 1 };
-let bg = 'void';
+let bg = 'light';
 let conn = 'elbow';
 const isLight = () => bg === 'light' || bg === 'white';
 const CONN_NAMES = { elbow: 'Ъглова', curve: 'Крива', straight: 'Права' };
@@ -291,6 +288,7 @@ function applyView() {
 
 /* ---------- индекс, DOM ---------- */
 function reindex() {
+  S.cfg = S.cfg || { color: null, glow: 0.35 };
   const ids = new Set(S.nodes.map((n) => n.id));
   S.edges = S.edges.filter((e) => ids.has(e.a) && ids.has(e.b));
   S.collapsed = S.collapsed.filter((id) => ids.has(id));
@@ -304,7 +302,7 @@ function reindex() {
   const eids = new Set(S.edges.map((e) => e.id));
   for (const id of links.keys()) if (!eids.has(id)) links.delete(id);
   if (selLink && !eids.has(selLink)) selLink = null;
-  for (const e of S.edges) if (!links.has(e.id)) links.set(e.id, newLink(e.style));
+  for (const e of S.edges) if (!links.has(e.id)) links.set(e.id, newLink());
   render();
 }
 function render() {
@@ -317,8 +315,7 @@ function render() {
       el.className = 'node'; el.dataset.id = n.id;
       el.innerHTML = `<div class="head"><div class="ico"></div><div class="f title" data-f="title" data-ph="Звено"></div></div>
         <div class="f name" data-f="name" data-ph="Име и длъжност"></div><div class="f note" data-f="note" data-ph="Бележка"></div>
-        <i class="port p0" data-p="0"></i><i class="port p1" data-p="1"></i><i class="port p2" data-p="2"></i><i class="port p3" data-p="3"></i>
-        <button class="badge" aria-label="Скрий или покажи подчинените"></button>`;
+        <i class="port p0" data-p="0"></i><i class="port p1" data-p="1"></i><i class="port p2" data-p="2"></i><i class="port p3" data-p="3"></i>`;
       $world.appendChild(el);
       r = { el, s: hid.has(n.id) ? 0 : 0.01, ang: 0, angv: 0, ox: 0, oy: 0, h: 110, px: n.x, py: n.y, sc: 0, lcx: n.x, lcy: n.y, anchor: null };
       rt.set(n.id, r);
@@ -329,10 +326,6 @@ function render() {
     if (!el.classList.contains('editing')) for (const f of ['title', 'name', 'note']) { const t = el.querySelector('[data-f=' + f + ']'); if (t.textContent !== (n[f] || '')) t.textContent = n[f] || ''; }
     const ico = el.querySelector('.ico');
     ico.style.backgroundImage = n.photo ? `url(${n.photo})` : ''; ico.textContent = n.photo ? '' : (n.icon || ''); ico.style.display = (n.photo || n.icon) ? '' : 'none';
-    const b = el.querySelector('.badge'), cnt = descN.get(n.id);
-    b.classList.toggle('on', !!cnt); const closed = S.collapsed.includes(n.id);
-    b.classList.toggle('closed', closed); b.textContent = cnt ? (closed ? '+' + cnt : '− ' + cnt) : '';
-    b.title = closed ? `Покажи ${cnt} скрити` : 'Скрий подчинените';
   }
   updateButtons();
 }
@@ -349,12 +342,12 @@ function commit() {
 function restore(s) { S = JSON.parse(s); reindex(); updateButtons(); saveSoon(); }
 function undo() { if (hpos > 0) { restore(hist[--hpos]); } }
 function redo() { if (hpos < hist.length - 1) { restore(hist[++hpos]); } }
-function updateButtons() { $('#undo').disabled = hpos <= 0; $('#redo').disabled = hpos >= hist.length - 1; }
+function updateButtons() { $('#edit').disabled = sel.size !== 1; $('#undo').disabled = hpos <= 0; $('#redo').disabled = hpos >= hist.length - 1; }
 function saveSoon() { clearTimeout(saveT); saveT = setTimeout(() => { try { localStorage.setItem(KEY, JSON.stringify({ S, view, bg, conn })); } catch (e) {} }, 400); }
 
 /* ---------- връзки ---------- */
 const NP = 24;
-function newLink(style) { return { pts: [], style: style || 'slate' }; }
+function newLink() { return { pts: [] }; }
 const DIRS = [[0, -1], [1, 0], [0, 1], [-1, 0]];
 function connPath(A, pa, B, pb) {
   const da = DIRS[pa], db = pb == null ? null : DIRS[pb];
@@ -375,23 +368,36 @@ function connPath(A, pa, B, pb) {
   pts.push(b1, B);
   return { pts, smooth: false };
 }
-function drawConn(A, pa, B, pb, style, alpha, ws, glow, hit) {
-  const st = LINES[style] || LINES.slate, col = isLight() ? st.base : st.hi, w = 1.8 * ws;
-  const { pts, smooth } = connPath(A, pa, B, pb);
+function roundedPath(g, pts, R) {
+  const p = [pts[0]];
+  for (let i = 1; i < pts.length; i++) if (Math.hypot(pts[i].x - p[p.length - 1].x, pts[i].y - p[p.length - 1].y) > 0.5) p.push(pts[i]);
+  const q = [p[0]];                      // махаме точки по права линия
+  for (let i = 1; i < p.length - 1; i++) { const a = q[q.length - 1], b = p[i], c = p[i + 1]; if (Math.abs((b.x - a.x) * (c.y - b.y) - (b.y - a.y) * (c.x - b.x)) > 0.5) q.push(b); }
+  q.push(p[p.length - 1]);
+  g.beginPath(); g.moveTo(q[0].x, q[0].y);
+  for (let i = 1; i < q.length - 1; i++) {
+    const a = q[i - 1], b = q[i], c = q[i + 1], l1 = Math.hypot(a.x - b.x, a.y - b.y), l2 = Math.hypot(c.x - b.x, c.y - b.y), r = Math.min(R, l1 / 2, l2 / 2);
+    g.lineTo(b.x + (a.x - b.x) / l1 * r, b.y + (a.y - b.y) / l1 * r);
+    g.quadraticCurveTo(b.x, b.y, b.x + (c.x - b.x) / l2 * r, b.y + (c.y - b.y) / l2 * r);
+  }
+  g.lineTo(q[q.length - 1].x, q[q.length - 1].y);
+}
+function drawConn(A, pa, B, pb, col, gl, alpha, ws, sel, hit, g = ctx, g2 = ctx2, light = isLight()) {
+  const w = 1.8 * ws, { pts, smooth } = connPath(A, pa, B, pb);
   if (hit) hit.pts = pts;
   const path = () => {
-    ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y);
-    if (smooth) { for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y); }
-    else { for (let i = 1; i < pts.length - 1; i++) ctx.arcTo(pts[i].x, pts[i].y, pts[i + 1].x, pts[i + 1].y, 12); ctx.lineTo(pts[pts.length - 1].x, pts[pts.length - 1].y); }
+    if (!smooth) return roundedPath(g, pts, 14);
+    g.beginPath(); g.moveTo(pts[0].x, pts[0].y); for (let i = 1; i < pts.length; i++) g.lineTo(pts[i].x, pts[i].y);
   };
-  ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.globalAlpha = alpha;
-  if (glow) { path(); ctx.strokeStyle = 'rgba(10,108,255,.28)'; ctx.lineWidth = w + 8; ctx.stroke(); }
-  path(); ctx.strokeStyle = col; ctx.lineWidth = w; ctx.stroke();
-  const bg0 = isLight() ? '#fff' : '#000';
-  ctx2.globalAlpha = alpha;
-  ctx2.beginPath(); ctx2.arc(A.x, A.y, 3.6 * ws, 0, 6.2832); ctx2.fillStyle = col; ctx2.fill();
-  ctx2.beginPath(); ctx2.arc(B.x, B.y, 4.6 * ws, 0, 6.2832); ctx2.fillStyle = bg0; ctx2.fill(); ctx2.strokeStyle = col; ctx2.lineWidth = 1.8 * ws; ctx2.stroke();
-  ctx.globalAlpha = 1; ctx2.globalAlpha = 1;
+  g.lineCap = 'round'; g.lineJoin = 'round';
+  if (sel) { path(); g.globalAlpha = alpha; g.strokeStyle = 'rgba(10,108,255,.28)'; g.lineWidth = w + 12; g.stroke(); }
+  if (gl > 0) for (const [m, a] of [[18, .06], [10, .12], [5, .22]]) { path(); g.strokeStyle = col; g.globalAlpha = alpha * Math.min(1, a * gl * 2.2); g.lineWidth = w + m * ws; g.stroke(); }
+  path(); g.globalAlpha = alpha; g.strokeStyle = col; g.lineWidth = w; g.stroke();
+  const bg0 = light ? '#fff' : '#000';
+  g2.globalAlpha = alpha;
+  g2.beginPath(); g2.arc(A.x, A.y, 3.6 * ws, 0, 6.2832); g2.fillStyle = col; g2.fill();
+  g2.beginPath(); g2.arc(B.x, B.y, 4.6 * ws, 0, 6.2832); g2.fillStyle = bg0; g2.fill(); g2.strokeStyle = col; g2.lineWidth = 1.8 * ws; g2.stroke();
+  g.globalAlpha = 1; g2.globalAlpha = 1;
 }
 const CONN_ORDER = ['elbow', 'curve', 'straight'];
 function setConn(c) { conn = c; $('#conn').textContent = CONN_NAMES[c]; }
@@ -448,8 +454,8 @@ function frame(t) {
     ends.push({ e, hit, A: portPos(e.a, e.pa), B: portPos(e.b, e.pb), vis: Math.min(ra.sc, rb.sc) });
   }
   for (const [c, k] of [[ctx, cv], [ctx2, cv2]]) { c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, k.width, k.height); c.setTransform(dpr * view.z, 0, 0, dpr * view.z, dpr * view.x, dpr * view.y); }
-  for (const x of ends) if (x.vis >= 0.03) drawConn(x.A, x.e.pa, x.B, x.e.pb, x.e.style, Math.min(1, x.vis * 1.5), 0.5 + 0.5 * x.vis, x.e.id === selLink, x.hit);
-  if (link) drawConn(portPos(link.from, link.port), link.port, link.cur, null, 'slate', 1, 1, false, null);
+  for (const x of ends) if (x.vis >= 0.03) drawConn(x.A, x.e.pa, x.B, x.e.pb, x.e.color ?? S.cfg.color ?? defLinkColor(), x.e.glow ?? S.cfg.glow, Math.min(1, x.vis * 1.5), 0.5 + 0.5 * x.vis, x.e.id === selLink, x.hit);
+  if (link) drawConn(portPos(link.from, link.port), link.port, link.cur, null, defLinkColor(), 0.3, 1, 1, false, null);
   placeBar();
   requestAnimationFrame(frame);
 }
@@ -519,7 +525,7 @@ function connect(ids, target, port, cur) {
       pa = port; let best = 1e9; pb = 0;
       for (let p = 0; p < 4; p++) { const q = portPos(target, p), d = Math.hypot(q.x - cur.x, q.y - cur.y); if (d < best) { best = d; pb = p; } }
     } else [pa, pb] = autoPorts(id, target);
-    S.edges.push({ id: uid(), a: id, b: target, pa, pb, style: 'slate' }); made++;
+    S.edges.push({ id: uid(), a: id, b: target, pa, pb }); made++;
   }
   if (made) { reindex(); commit(); }
 }
@@ -583,8 +589,7 @@ $world.addEventListener('keydown', (e) => {
   if (e.key === 'Enter' && !e.shiftKey && f.dataset.f !== 'note') { e.preventDefault(); const next = f.dataset.f === 'title' ? 'name' : 'note'; rt.get(editing).el.querySelector('[data-f=' + next + ']').focus(); }
 });
 $vp.addEventListener('dblclick', (e) => {
-  const nodeEl = e.target.closest('.node');
-  if (nodeEl) { startEdit(nodeEl.dataset.id, (e.target.closest('.f') || {}).dataset ? e.target.closest('.f').dataset.f : 'title'); return; }
+  if (e.target.closest('.node')) return;
   const p = toWorld(e.clientX, e.clientY); addNode(p.x, p.y - 40, true);
 });
 
@@ -592,21 +597,34 @@ $vp.addEventListener('dblclick', (e) => {
 let mode = null;
 const $mq = $('#mq');
 function closeLinkMenu() { $('#rmenu').style.display = 'none'; }
-function openLinkMenu(eid, x, y) {
-  selLink = eid; const m = $('#rmenu'); m.innerHTML = '';
-  for (const k in LINES) { const b = document.createElement('button'); b.className = 'row'; b.innerHTML = `<span class="chip" style="background:${LINES[k].base}"></span>${LINES[k].n}`; b.onclick = () => { S.edges.find((e) => e.id === eid).style = k; closeLinkMenu(); commit(); }; m.appendChild(b); }
-  const d = document.createElement('button'); d.className = 'row del'; d.textContent = 'Изтрий връзката'; d.onclick = deleteSelection; m.appendChild(d);
-  m.style.display = 'block'; m.style.left = clamp(x + 8, 8, W - 200) + 'px'; m.style.top = clamp(y + 8, 8, H - 260) + 'px';
+function openLinkMenu(eid, x, y, above) {
+  selLink = eid; const m = $('#rmenu'), one = eid ? S.edges.find((e) => e.id === eid) : null;
+  const tgt = one || S.cfg, curColor = () => tgt.color ?? S.cfg.color ?? defLinkColor(), curGlow = () => tgt.glow ?? S.cfg.glow;
+  m.innerHTML = `<div class="mt">${one ? 'Тази връзка' : 'Всички връзки'}</div><div class="sws"></div>
+    <label class="mrow"><span>Свой цвят</span><input type="color" id="lc"></label>
+    <label class="mrow"><span>Блясък</span><input type="range" id="lg" min="0" max="100"><b id="lgv"></b></label>`;
+  const sws = m.querySelector('.sws'), lc = $('#lc'), lg = $('#lg'), lgv = $('#lgv');
+  const apply = (p) => { Object.assign(tgt, p); if (!one) for (const e of S.edges) for (const k in p) delete e[k]; };
+  const sync = () => { lc.value = curColor(); lg.value = Math.round(curGlow() * 100); lgv.textContent = lg.value; sws.querySelectorAll('.sw').forEach((b) => b.classList.toggle('on', b.dataset.c === curColor())); };
+  for (const c of LINK_COLORS) { const b = document.createElement('button'); b.className = 'sw'; b.style.background = c; b.dataset.c = c; b.setAttribute('aria-label', 'Цвят ' + c); sws.appendChild(b); }
+  const au = document.createElement('button'); au.className = 'tbtn auto'; au.textContent = 'Авто'; au.title = 'Цвят по тема'; sws.appendChild(au);
+  sws.onclick = (e) => { const b = e.target.closest('button'); if (!b) return; apply({ color: b.classList.contains('auto') ? null : b.dataset.c }); sync(); commit(); };
+  lc.oninput = () => apply({ color: lc.value }); lc.onchange = () => { sync(); commit(); };
+  lg.oninput = () => { apply({ glow: lg.value / 100 }); lgv.textContent = lg.value; }; lg.onchange = commit;
+  if (one) { const d = document.createElement('button'); d.className = 'row del'; d.textContent = 'Изтрий връзката'; d.onclick = deleteSelection; m.appendChild(d); }
+  sync(); m.style.display = 'block';
+  m.style.left = clamp(x - (above ? m.offsetWidth / 2 : -8), 8, W - m.offsetWidth - 8) + 'px';
+  m.style.top = clamp(above ? y - m.offsetHeight - 10 : y + 8, 8, H - m.offsetHeight - 8) + 'px';
 }
 $vp.addEventListener('pointerdown', (e) => {
   if (e.button > 1) return;
   const t = e.target;
   if (t.closest('.editing .f')) return;
+  const wasEditing = editing;
   if (document.activeElement && document.activeElement !== document.body && document.activeElement.blur) document.activeElement.blur();
   closeLinkMenu(); $('#help').style.display = 'none';
   const nodeEl = t.closest('.node'), wp = toWorld(e.clientX, e.clientY);
   if (e.button === 1) { e.preventDefault(); mode = { type: 'pan', sx: e.clientX, sy: e.clientY, vx: view.x, vy: view.y }; $vp.classList.add('panning'); return; }
-  if (t.closest('.badge') && nodeEl) { e.preventDefault(); toggleCollapse(nodeEl.dataset.id); return; }
   if (t.closest('.port') && nodeEl) {
     e.preventDefault(); const id = nodeEl.dataset.id, port = +t.closest('.port').dataset.p;
     if (!sel.has(id)) { sel = new Set([id]); render(); }
@@ -618,7 +636,7 @@ $vp.addEventListener('pointerdown', (e) => {
     if (e.shiftKey) { sel.has(id) ? sel.delete(id) : sel.add(id); render(); return; }
     if (!sel.has(id)) { sel = new Set([id]); render(); }
     const orig = new Map(); sel.forEach((i) => { const n = nodeById(i); orig.set(i, { x: n.x, y: n.y }); rt.get(i).el.style.zIndex = ++zTop; });
-    mode = { type: 'drag', id, sx: e.clientX, sy: e.clientY, orig, moved: false }; return;
+    mode = { type: 'drag', id, sx: e.clientX, sy: e.clientY, orig, moved: false, wasEditing: wasEditing === id }; return;
   }
   // връзка?
   let hit = null, bd = 1e9;
@@ -660,12 +678,15 @@ addEventListener('pointerup', (e) => {
   $vp.classList.remove('panning'); document.body.classList.remove('linking');
   document.querySelectorAll('.node.target,.node.drag').forEach((n) => n.classList.remove('target', 'drag'));
   if (m.type === 'pan') { if (!m.moved && sel.size) { sel = new Set(); render(); } saveSoon(); }
-  else if (m.type === 'drag') { if (m.moved) commit(); else if (sel.size > 1) { sel = new Set([m.id]); render(); } }
+  else if (m.type === 'drag') {
+    if (m.moved) commit();
+    else { if (sel.size > 1) { sel = new Set([m.id]); render(); } if (!m.wasEditing && adj.has(m.id)) toggleCollapse(m.id); }
+  }
   else if (m.type === 'link') {
     const l = link; link = null;
     const tg = document.elementFromPoint(e.clientX, e.clientY), te = tg && tg.closest('.node');
     if (te && te.dataset.id !== l.from) connect(l.ids, te.dataset.id, l.port, toWorld(e.clientX, e.clientY));
-  } else if (m.type === 'marquee') $mq.style.display = 'none';
+  } else if (m.type === 'marquee') { $mq.style.display = 'none'; updateButtons(); }
 });
 $vp.addEventListener('wheel', (e) => {
   e.preventDefault();
@@ -681,10 +702,115 @@ addEventListener('keydown', (e) => {
   else if (e.key === 'Escape') { sel = new Set(); selLink = null; closeLinkMenu(); render(); }
 });
 
+/* ---------- PDF ---------- */
+const loadImg = (src) => new Promise((ok) => { const i = new Image(); i.onload = () => ok(i); i.onerror = () => ok(null); i.src = src; });
+function wrapText(g, text, maxW) {
+  const out = [];
+  const fit = (line) => { while (g.measureText(line).width > maxW && line.length > 1) { let k = line.length - 1; while (k > 1 && g.measureText(line.slice(0, k)).width > maxW) k--; out.push(line.slice(0, k)); line = line.slice(k); } return line; };
+  for (const para of String(text).split('\n')) {
+    let line = '';
+    for (const w of para.split(' ')) {
+      const t = line ? line + ' ' + w : w;
+      if (!line || g.measureText(t).width <= maxW) line = t; else { out.push(fit(line)); line = w; }
+    }
+    out.push(fit(line));
+  }
+  return out;
+}
+function makePdf(jpg, iw, ih, pw, ph, dx, dy, dw, dh) {
+  const enc = new TextEncoder(), parts = [], offs = []; let len = 0;
+  const push = (b) => { const u = typeof b === 'string' ? enc.encode(b) : b; parts.push(u); len += u.length; };
+  const obj = (n, head, stream) => { offs[n] = len; push(`${n} 0 obj\n${head}\n`); if (stream) { push('stream\n'); push(stream); push('\nendstream\n'); } push('endobj\n'); };
+  push('%PDF-1.4\n');
+  obj(1, '<< /Type /Catalog /Pages 2 0 R >>');
+  obj(2, '<< /Type /Pages /Kids [3 0 R] /Count 1 >>');
+  obj(3, `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pw} ${ph}] /Resources << /XObject << /Im0 5 0 R >> >> /Contents 4 0 R >>`);
+  const c = `q ${dw.toFixed(2)} 0 0 ${dh.toFixed(2)} ${dx.toFixed(2)} ${dy.toFixed(2)} cm /Im0 Do Q`;
+  obj(4, `<< /Length ${c.length} >>`, c);
+  obj(5, `<< /Type /XObject /Subtype /Image /Width ${iw} /Height ${ih} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpg.length} >>`, jpg);
+  const xr = len;
+  push('xref\n0 6\n0000000000 65535 f \n' + [1, 2, 3, 4, 5].map((n) => String(offs[n]).padStart(10, '0') + ' 00000 n \n').join('') + `trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n${xr}\n%%EOF`);
+  return new Blob(parts, { type: 'application/pdf' });
+}
+async function exportPdf() {
+  if (editing) endEdit();
+  const vis = S.nodes.filter((n) => !hid.has(n.id) && rt.get(n.id)); if (!vis.length) return;
+  const btn = $('#pdf'); btn.disabled = true; btn.textContent = '…';
+  try {
+    await document.fonts.ready;
+    const M = 48, HEAD = 58, geo = new Map(); let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+    for (const n of vis) {
+      const el = rt.get(n.id).el, h = el.offsetHeight, top = n.y - h / 2;
+      geo.set(n.id, { n, el, h, top, left: n.x - NW / 2, photo: n.photo ? await loadImg(n.photo) : null });
+      x0 = Math.min(x0, n.x - NW / 2); x1 = Math.max(x1, n.x + NW / 2); y0 = Math.min(y0, top); y1 = Math.max(y1, top + h + 16);
+    }
+    const CW = x1 - x0 + M * 2, CH = y1 - y0 + M * 2 + HEAD, s = Math.min(3, 4200 / Math.max(CW, CH));
+    const mk = () => { const c = document.createElement('canvas'); c.width = Math.round(CW * s); c.height = Math.round(CH * s); const g = c.getContext('2d'); g.setTransform(s, 0, 0, s, 0, 0); return [c, g]; };
+    const [cv0, g] = mk(), [cv1, g2] = mk();
+    g.fillStyle = '#fff'; g.fillRect(0, 0, CW, CH);
+    // заглавна лента
+    const logo = $('#brand img'), lh = 26, lw = logo.naturalWidth ? logo.naturalWidth / logo.naturalHeight * lh : 60;
+    if (logo.complete && logo.naturalWidth) g.drawImage(logo, M, M * 0.5, lw, lh);
+    g.fillStyle = 'rgba(10,26,51,.14)'; g.fillRect(M + lw + 12, M * 0.5 + 4, 1, 18);
+    g.textBaseline = 'middle'; g.font = '600 13px "Noto Sans", sans-serif'; g.fillStyle = '#6b7a8c'; if ('letterSpacing' in g) g.letterSpacing = '1.2px';
+    g.textAlign = 'left'; g.fillText('ОРГАНИГРАМА', M + lw + 24, M * 0.5 + 13);
+    g.textAlign = 'right'; g.fillText(new Date().toLocaleDateString('bg-BG'), CW - M, M * 0.5 + 13);
+    if ('letterSpacing' in g) g.letterSpacing = '0px'; g.textAlign = 'left';
+    // връзки
+    const tx = M - x0, ty = M + HEAD - y0;
+    g.save(); g.translate(tx, ty); g2.save(); g2.translate(tx, ty);
+    const port = (id, p) => { const q = geo.get(id); return [{ x: q.n.x, y: q.top }, { x: q.n.x + NW / 2, y: q.top + q.h / 2 }, { x: q.n.x, y: q.top + q.h }, { x: q.n.x - NW / 2, y: q.top + q.h / 2 }][p]; };
+    const lum = (hex) => { const v = parseInt(hex.slice(1), 16); return (0.299 * (v >> 16) + 0.587 * ((v >> 8) & 255) + 0.114 * (v & 255)) / 255; };
+    for (const e of S.edges) {
+      if (!geo.has(e.a) || !geo.has(e.b)) continue;
+      let col = e.color ?? S.cfg.color ?? '#5b6b80'; if (lum(col) > 0.85) col = '#5b6b80';   // бялото не личи на бял лист
+      drawConn(port(e.a, e.pa), e.pa, port(e.b, e.pb), e.pb, col, e.glow ?? S.cfg.glow, 1, 1, false, null, g, g2, true);
+    }
+    // звена
+    const FF = (cs) => `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+    for (const c of geo.values()) {
+      const { n, el, h, top, left } = c;
+      g.save(); g.shadowColor = 'rgba(10,26,51,.2)'; g.shadowBlur = 26 * s; g.shadowOffsetY = 10 * s; g.fillStyle = '#fff';
+      g.beginPath(); g.roundRect(left, top, NW, h, 24); g.fill(); g.restore();
+      g.strokeStyle = 'rgba(10,26,51,.14)'; g.lineWidth = 1; g.beginPath(); g.roundRect(left + .5, top + .5, NW - 1, h - 1, 24); g.stroke();
+      g.fillStyle = n.color; g.beginPath(); g.roundRect(left + 18, top, NW - 36, 2.5, [0, 0, 3, 3]); g.fill();
+      const ico = el.querySelector('.ico');
+      if (ico.offsetWidth) {
+        const cx = left + 1 + ico.offsetLeft + ico.offsetWidth / 2, cy = top + 1 + ico.offsetTop + ico.offsetHeight / 2, rr = ico.offsetWidth / 2;
+        g.save(); g.globalAlpha = .14; g.fillStyle = n.color; g.beginPath(); g.arc(cx, cy, rr, 0, 6.2832); g.fill(); g.restore();
+        if (c.photo) { g.save(); g.beginPath(); g.arc(cx, cy, rr, 0, 6.2832); g.clip(); g.drawImage(c.photo, cx - rr, cy - rr, rr * 2, rr * 2); g.restore(); }
+        else if (n.icon) { g.font = '18px "Noto Sans", "Segoe UI Emoji", sans-serif'; g.textAlign = 'center'; g.fillStyle = '#000'; g.fillText(n.icon, cx, cy + 1); g.textAlign = 'left'; }
+      }
+      for (const k of ['title', 'name', 'note']) {
+        const f = el.querySelector('[data-f=' + k + ']'); if (!f.offsetHeight) continue;
+        const cs = getComputedStyle(f), px = parseFloat(cs.paddingLeft) + parseFloat(cs.borderLeftWidth), py = parseFloat(cs.paddingTop) + parseFloat(cs.borderTopWidth);
+        const fx = left + 1 + f.offsetLeft, fy = top + 1 + f.offsetTop, lhh = parseFloat(cs.lineHeight) || parseFloat(cs.fontSize) * 1.3;
+        const txt = n[k] || (k === 'title' ? 'Без име' : ''); if (!txt) continue;
+        if (k === 'note') { g.fillStyle = 'rgba(10,26,51,.14)'; g.fillRect(fx, fy, f.offsetWidth, 1); }
+        g.font = FF(cs); if ('letterSpacing' in g) g.letterSpacing = cs.letterSpacing === 'normal' ? '0px' : cs.letterSpacing;
+        g.fillStyle = k === 'title' ? '#0a1a33' : '#45556a'; g.globalAlpha = n[k] ? 1 : .45;
+        wrapText(g, txt, el.clientWidth - parseFloat(getComputedStyle(el).paddingRight) - f.offsetLeft - px * 2).forEach((ln, i) => g.fillText(ln, fx + px, fy + py + i * lhh + lhh / 2 + .5));
+        g.globalAlpha = 1; if ('letterSpacing' in g) g.letterSpacing = '0px';
+      }
+    }
+    g.restore(); g2.restore();
+    g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.drawImage(cv1, 0, 0); g.restore();     // възлите на връзките отгоре
+    // A4 страница
+    const land = CW >= CH, pw = land ? 842 : 595, ph = land ? 595 : 842, k = Math.min((pw - 40) / CW, (ph - 40) / CH), dw = CW * k, dh = CH * k;
+    const b64 = cv0.toDataURL('image/jpeg', .93).split(',')[1], bin = atob(b64), jpg = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) jpg[i] = bin.charCodeAt(i);
+    const blob = makePdf(jpg, cv0.width, cv0.height, pw, ph, (pw - dw) / 2, (ph - dh) / 2, dw, dh);
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'organigrama.pdf'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  } catch (err) { alert('PDF не можа да се създаде: ' + err.message); }
+  btn.disabled = false; btn.textContent = 'PDF';
+}
+
 /* ---------- лента ---------- */
+$('#edit').onclick = () => { if (sel.size === 1) startEdit([...sel][0], 'title'); };
 $('#add').onclick = () => { const p = toWorld(W / 2 + (Math.random() - .5) * 120, H / 2 - 60 + (Math.random() - .5) * 80); addNode(p.x, p.y, true); };
 $('#arr').onclick = () => { arrange(false); reindex(); commit(); setTimeout(fit, 700); };
 $('#fit').onclick = fit;
+$('#lstyle').onclick = (e) => { e.stopPropagation(); const r = e.currentTarget.getBoundingClientRect(); sel = new Set(); render(); openLinkMenu(null, r.left + r.width / 2, r.top, true); };
 $('#conn').onclick = () => { setConn(CONN_ORDER[(CONN_ORDER.indexOf(conn) + 1) % CONN_ORDER.length]); saveSoon(); };
 $('#undo').onclick = undo; $('#redo').onclick = redo;
 document.querySelectorAll('.bgb').forEach((b) => b.onclick = () => { bg = b.dataset.bg; applyBg(); saveSoon(); });
@@ -693,11 +819,12 @@ $('#exp').onclick = () => {
   const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify({ S, bg, conn }, null, 1)], { type: 'application/json' }));
   a.download = 'organigrama.json'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
 };
+$('#pdf').onclick = exportPdf;
 $('#imp').onclick = () => $('#fileJson').click();
 $('#fileJson').onchange = (e) => {
   const f = e.target.files[0]; e.target.value = ''; if (!f) return;
   f.text().then((t) => {
-    try { const d = JSON.parse(t), s = d.S || d; if (!Array.isArray(s.nodes) || !Array.isArray(s.edges)) throw 0; S = { nodes: s.nodes, edges: s.edges, collapsed: s.collapsed || [] }; if (['void','light','white','night'].includes(d.bg)) { bg = d.bg; applyBg(); } setConn(CONN_NAMES[d.conn] ? d.conn : d.conn === 'line' ? 'curve' : 'elbow'); sel = new Set(); reindex(); commit(); fit(); }
+    try { const d = JSON.parse(t), s = d.S || d; if (!Array.isArray(s.nodes) || !Array.isArray(s.edges)) throw 0; S = { nodes: s.nodes, edges: s.edges, collapsed: s.collapsed || [], cfg: s.cfg }; if (['void','light','white','night'].includes(d.bg)) { bg = d.bg; applyBg(); } setConn(CONN_NAMES[d.conn] ? d.conn : d.conn === 'line' ? 'curve' : 'elbow'); sel = new Set(); reindex(); commit(); fit(); }
     catch (err) { alert('Файлът не е валидна органиграма.'); }
   });
 };
@@ -718,8 +845,8 @@ function demo() {
       mk('i', 'Поддръжка', 'Калоян Начев', COLORS[2], '⚙️'),
       mk('j', 'Счетоводство', 'Весела Атанасова', COLORS[4], '🏢'),
     ],
-    edges: [['a','b'],['a','c'],['a','d'],['b','e'],['b','f'],['c','g'],['c','h'],['c','i'],['d','j']].map(([a, b]) => ({ id: uid(), a, b, pa: 2, pb: 0, style: 'slate' })),
-    collapsed: [],
+    edges: [['a','b'],['a','c'],['a','d'],['b','e'],['b','f'],['c','g'],['c','h'],['c','i'],['d','j']].map(([a, b]) => ({ id: uid(), a, b, pa: 2, pb: 0 })),
+    collapsed: [], cfg: { color: null, glow: 0.35 },
   };
 }
 let loaded = false;
