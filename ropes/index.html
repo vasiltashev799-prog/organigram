@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
-<title>Въжена органиграма</title>
+<title>Органиграма</title>
 <style>
 :root {
   --bg: #fff; --ink: #0a1a33; --mist: #45556a; --ash: #6b7a8c; --accent: #0a6cff; --teal: #00b4e6; --radius: 24px;
@@ -28,8 +28,8 @@ html, body { margin: 0; height: 100%; overflow: hidden; font-family: var(--font)
 #brand span { font-size: 13px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--brand); }
 body[data-bg=night] #brand img { filter: brightness(0) invert(1); }
 #world { position: absolute; left: 0; top: 0; transform-origin: 0 0; z-index: 2; }
-#ropes, #knots { position: absolute; inset: 0; pointer-events: none; }
-#ropes { z-index: 1; } #knots { z-index: 3; }
+#links, #knots { position: absolute; inset: 0; pointer-events: none; }
+#links { z-index: 1; } #knots { z-index: 3; }
 
 .node { position: absolute; left: 0; top: 0; width: 200px; transform-origin: 0 0; background: var(--card); color: var(--nink);
   border: 1px solid var(--edge); border-radius: 20px; padding: 14px 16px 15px; cursor: grab;
@@ -126,7 +126,7 @@ body[data-bg=void] #nbar #nDel:hover { color: #ff7a6e; }
 </style>
 </head>
 <body data-bg="void">
-<div id="vp"><canvas id="fx"></canvas><canvas id="ropes"></canvas><div id="world"></div><canvas id="knots"></canvas></div>
+<div id="vp"><canvas id="fx"></canvas><canvas id="links"></canvas><div id="world"></div><canvas id="knots"></canvas></div>
 <div id="vig"></div>
 <div id="brand"><img src="data:image/png;base64,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" alt="BTL"><i></i><span>Органиграма</span></div>
 <div class="marquee" id="mq"></div>
@@ -142,11 +142,11 @@ body[data-bg=void] #nbar #nDel:hover { color: #ff7a6e; }
 <div id="help">
   <h3>Как се работи</h3>
   <ul>
-    <li>Влачи от синя точка на звено до друго звено, за да вържеш въже. Първото е родител, второто е подчинено.</li>
+    <li>Влачи от синя точка на звено до друго звено, за да свържеш две звена. Първото е родител, второто е подчинено.</li>
     <li>Двоен клик върху звено го редактира. Двоен клик върху празно място добавя ново.</li>
-    <li>Клик върху въже: смяна на стила или изтриване.</li>
+    <li>Клик върху връзка: смяна на цвета или изтриване. Бутонът „Ъглова" сменя вида: ъглова, крива, права.</li>
     <li>Значката най-долу на звеното скрива или показва клона му.</li>
-    <li>Shift+клик или Shift+рамка избира няколко звена. Влача ги заедно или връзвам всички към едно звено.</li>
+    <li>Shift+клик или Shift+рамка избира няколко звена. Влача ги заедно или свържи всички към едно звено.</li>
     <li>Празно място: влачене за преместване, колелце за мащаб. Ctrl+Z и Ctrl+Y връщат и повтарят.</li>
   </ul>
 </div>
@@ -158,7 +158,7 @@ body[data-bg=void] #nbar #nDel:hover { color: #ff7a6e; }
   <span class="sep"></span>
   <button id="undo" title="Назад (Ctrl+Z)" aria-label="Назад">↶</button>
   <button id="redo" title="Напред (Ctrl+Y)" aria-label="Напред">↷</button>
-  <button id="conn" title="Смени вида на връзките">Въже</button>
+  <button id="conn" title="Смени вида на връзките">Ъглова</button>
   <span class="sep"></span>
   <button class="bgb" data-bg="void" title="Празнота" aria-label="Празнота" style="background:radial-gradient(circle at 35% 35%,#0a6cff 0,#000 60%)"></button>
   <button class="bgb" data-bg="white" title="Бяло" aria-label="Бяло" style="background:#fff;box-shadow:inset 0 0 0 1px rgba(10,26,51,.25)"></button>
@@ -181,13 +181,12 @@ const uid = () => Math.random().toString(36).slice(2, 8);
 const NW = 200;
 const COLORS = ['#0a6cff', '#00b4e6', '#6d5dfc', '#12b886', '#f59f00', '#e8590c', '#0a1a33'];
 const ICONS = ['👤','🏢','⚙️','💼','📣','🧪','🛠️','📦','💰','🎯','🧭','⚓'];
-const ROPES = {
-  blue:  { n: 'Синьо',        base: '#0a4fc0', hi: '#6fa8ff', w: 6.5 },
-  navy:  { n: 'Тъмно синьо',  base: '#07132a', hi: '#3a5a8c', w: 6.5 },
-  teal:  { n: 'Тюркоаз',      base: '#0087ad', hi: '#6fdcf5', w: 6.5 },
-  silver:{ n: 'Сребро',       base: '#8d9bb0', hi: '#eef3fa', w: 6.5 },
-  hemp:  { n: 'Коноп',        base: '#85653a', hi: '#d6b87f', w: 7 },
-  cord:  { n: 'Тънък шнур',   base: '#0a4fc0', hi: '#6fa8ff', w: 3.4 },
+const LINES = {
+  slate: { n: 'Графит',       base: '#5b6b80', hi: '#a9b6c9' },
+  blue:  { n: 'Синьо',        base: '#0a6cff', hi: '#6fa8ff' },
+  navy:  { n: 'Тъмно синьо',  base: '#0a1a33', hi: '#7f97bd' },
+  teal:  { n: 'Тюркоаз',      base: '#0087ad', hi: '#6fdcf5' },
+  silver:{ n: 'Сребро',       base: '#9aa7b8', hi: '#dfe6f0' },
 };
 const KEY = 'ropechart.v3';
 
@@ -195,17 +194,17 @@ const KEY = 'ropechart.v3';
 let S = { nodes: [], edges: [], collapsed: [] };
 let view = { x: 0, y: 0, z: 1 };
 let bg = 'void';
-let conn = 'rope';
+let conn = 'elbow';
 const isLight = () => bg === 'light' || bg === 'white';
-const CONN_NAMES = { rope: 'Въже', line: 'Линия', elbow: 'Ъгъл' };
+const CONN_NAMES = { elbow: 'Ъглова', curve: 'Крива', straight: 'Права' };
 let sel = new Set();
-let selRope = null;
+let selLink = null;
 const rt = new Map();     // id -> runtime на звено
-const ropes = new Map();  // id на връзка -> въже
+const links = new Map();  // id на връзка -> точки за клик
 let adj = new Map(), hid = new Map(), descN = new Map();
 let hist = [], hpos = -1, zTop = 10;
 
-const $vp = $('#vp'), $world = $('#world'), cv = $('#ropes'), ctx = cv.getContext('2d'), cv2 = $('#knots'), ctx2 = cv2.getContext('2d'), fx = $('#fx'), fctx = fx.getContext('2d');
+const $vp = $('#vp'), $world = $('#world'), cv = $('#links'), ctx = cv.getContext('2d'), cv2 = $('#knots'), ctx2 = cv2.getContext('2d'), fx = $('#fx'), fctx = fx.getContext('2d');
 let W = 0, H = 0, dpr = 1;
 
 function resize() {
@@ -237,33 +236,49 @@ function applyBg() {
   document.querySelectorAll('.bgb').forEach((b) => b.classList.toggle('on', b.dataset.bg === bg));
   applyView();
 }
-/* живи частици: контурни триъгълници, които се носят, въртят и избягват курсора */
+/* плаващи форми: различни фигури, които се носят бавно, полюшват се и се отдръпват от курсора */
+const SHAPES = ['circ', 'ring', 'sq', 'dia', 'hex', 'tri', 'plus'];
 let parts = []; const mouse = { x: -999, y: -999 };
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 function initParts() {
-  const n = Math.round(clamp(W * H / 8500, 60, 220));
+  const n = Math.round(clamp(W * H / 14000, 36, 130));
   parts = Array.from({ length: n }, () => {
     const z = 0.15 + Math.random() * 0.85;
-    return { x: Math.random() * W, y: Math.random() * H, z, s: 3.5 + z * z * 20 + Math.random() * 4, rot: Math.random() * 6.28, vr: (Math.random() - .5) * .5,
-      vx: (Math.random() - .5) * 14, vy: (Math.random() - .5) * 14 - 3, ci: Math.random(), ph: Math.random() * 6.28, ox: 0, oy: 0, lw: .8 + z * 1.3 };
+    return { x: Math.random() * W, y: Math.random() * H, z, k: SHAPES[Math.floor(Math.random() * SHAPES.length)], s: 5 + z * z * 24 + Math.random() * 5,
+      rot: Math.random() * 6.28, vr: (Math.random() - .5) * .22, vx: (Math.random() - .5) * 7, vy: -(2 + Math.random() * 5),
+      ci: Math.random(), ph: Math.random() * 6.28, bob: 6 + Math.random() * 12, ox: 0, oy: 0, lw: .8 + z * 1.2 };
   });
+}
+function poly(g, x, y, s, n, rot) {
+  for (let k = 0; k < n; k++) { const an = rot + k * 6.2832 / n, px = x + Math.cos(an) * s, py = y + Math.sin(an) * s; k ? g.lineTo(px, py) : g.moveTo(px, py); }
+  g.closePath();
+}
+function shapePath(g, k, x, y, s, rot) {
+  g.beginPath();
+  if (k === 'circ' || k === 'ring') g.arc(x, y, s * .85, 0, 6.2832);
+  else if (k === 'sq') poly(g, x, y, s * 1.05, 4, rot + .785);
+  else if (k === 'dia') poly(g, x, y, s * 1.2, 4, rot);
+  else if (k === 'hex') poly(g, x, y, s, 6, rot);
+  else if (k === 'tri') poly(g, x, y, s, 3, rot);
+  else { const c = Math.cos(rot) * s, d = Math.sin(rot) * s; g.moveTo(x - c, y - d); g.lineTo(x + c, y + d); g.moveTo(x + d, y - c); g.lineTo(x - d, y + c); }
 }
 function drawBg(dt, t) {
   const B = BGS[bg]; if (!B.a) { fctx.setTransform(dpr, 0, 0, dpr, 0, 0); fctx.clearRect(0, 0, W, H); return; }
-  const pad = 50, ww = W + pad * 2, hh = H + pad * 2, nc = B.cols.length - (bg === 'void' ? 1 : 0);
-  fctx.setTransform(dpr, 0, 0, dpr, 0, 0); fctx.clearRect(0, 0, W, H); fctx.lineJoin = 'round';
+  const pad = 60, ww = W + pad * 2, hh = H + pad * 2, nc = B.cols.length - (bg === 'void' ? 1 : 0);
+  fctx.setTransform(dpr, 0, 0, dpr, 0, 0); fctx.clearRect(0, 0, W, H); fctx.lineJoin = 'round'; fctx.lineCap = 'round';
   for (const p of parts) {
     if (!reduceMotion) { p.x += p.vx * dt * p.z; p.y += p.vy * dt * p.z; p.rot += p.vr * dt; }
-    const sx = (((p.x + view.x * (0.1 + p.z * 0.5)) % ww) + ww) % ww - pad, sy = (((p.y + view.y * (0.1 + p.z * 0.5)) % hh) + hh) % hh - pad;
+    const bx = reduceMotion ? 0 : Math.sin(t * 0.0007 + p.ph) * p.bob * p.z, by = reduceMotion ? 0 : Math.cos(t * 0.0005 + p.ph) * p.bob * p.z;
+    const sx = (((p.x + view.x * (0.1 + p.z * 0.5)) % ww) + ww) % ww - pad + bx, sy = (((p.y + view.y * (0.1 + p.z * 0.5)) % hh) + hh) % hh - pad + by;
     const dx = sx - mouse.x, dy = sy - mouse.y, d = Math.hypot(dx, dy);
     const tx = d < 170 && d > .1 ? dx / d * (1 - d / 170) * 70 * p.z : 0, ty = d < 170 && d > .1 ? dy / d * (1 - d / 170) * 70 * p.z : 0;
     p.ox += (tx - p.ox) * .06; p.oy += (ty - p.oy) * .06;
     const col = bg === 'void' && p.ci > .94 ? B.cols[B.cols.length - 1] : B.cols[Math.floor(Math.min(p.ci, .939) / .94 * nc) % nc];
-    const a = B.a * (0.22 + 0.6 * p.z) * (0.72 + 0.28 * Math.sin(t * 0.0012 + p.ph));
-    fctx.beginPath();
-    for (let k = 0; k < 3; k++) { const an = p.rot + k * 2.0944, x = sx + p.ox + Math.cos(an) * p.s, y = sy + p.oy + Math.sin(an) * p.s; k ? fctx.lineTo(x, y) : fctx.moveTo(x, y); }
-    fctx.closePath(); fctx.strokeStyle = col; fctx.globalAlpha = a; fctx.lineWidth = p.lw; fctx.stroke();
-    if (p.z > .8) { fctx.fillStyle = col; fctx.globalAlpha = a * .14; fctx.fill(); }
+    const a = B.a * (0.2 + 0.55 * p.z) * (0.75 + 0.25 * Math.sin(t * 0.0012 + p.ph));
+    shapePath(fctx, p.k, sx + p.ox, sy + p.oy, p.s, p.rot);
+    fctx.strokeStyle = col; fctx.fillStyle = col; fctx.lineWidth = p.lw;
+    if (p.k !== 'ring' && p.k !== 'plus') { fctx.globalAlpha = a * (p.z < .5 ? .5 : .12); fctx.fill(); }
+    fctx.globalAlpha = a * (p.z < .5 ? .6 : 1); fctx.stroke();
   }
   fctx.globalAlpha = 1;
 }
@@ -287,9 +302,9 @@ function reindex() {
   for (const id of S.collapsed) for (const d of desc(id)) if (!hid.has(d)) hid.set(d, id);
   for (const id of [...sel]) if (!ids.has(id) || hid.has(id)) sel.delete(id);
   const eids = new Set(S.edges.map((e) => e.id));
-  for (const id of ropes.keys()) if (!eids.has(id)) ropes.delete(id);
-  if (selRope && !eids.has(selRope)) selRope = null;
-  for (const e of S.edges) if (!ropes.has(e.id)) ropes.set(e.id, newRope(e.style));
+  for (const id of links.keys()) if (!eids.has(id)) links.delete(id);
+  if (selLink && !eids.has(selLink)) selLink = null;
+  for (const e of S.edges) if (!links.has(e.id)) links.set(e.id, newLink(e.style));
   render();
 }
 function render() {
@@ -337,79 +352,21 @@ function redo() { if (hpos < hist.length - 1) { restore(hist[++hpos]); } }
 function updateButtons() { $('#undo').disabled = hpos <= 0; $('#redo').disabled = hpos >= hist.length - 1; }
 function saveSoon() { clearTimeout(saveT); saveT = setTimeout(() => { try { localStorage.setItem(KEY, JSON.stringify({ S, view, bg, conn })); } catch (e) {} }, 400); }
 
-/* ---------- въже (Verlet) ---------- */
-const NP = 20;
-function newRope(style) { return { pts: Array.from({ length: NP }, () => ({ x: 0, y: 0, px: 0, py: 0 })), L: 0, init: false, style: style || 'blue' }; }
-function lineRope(r, A, B) {
-  const d = Math.hypot(B.x - A.x, B.y - A.y);
-  r.pts.forEach((p, i) => { const t = i / (NP - 1); p.x = p.px = A.x + (B.x - A.x) * t; p.y = p.py = A.y + (B.y - A.y) * t; });
-  r.L = d; r.init = true;
-}
-function stepRope(r, A, B, vis) {
-  const d = Math.hypot(B.x - A.x, B.y - A.y), tgt = d + (d * 0.2 + 40) * vis;
-  r.L = Math.max(d * 1.005, r.L + (tgt - r.L) * 0.18);
-  const p = r.pts, seg = r.L / (NP - 1);
-  for (let i = 1; i < NP - 1; i++) {
-    const q = p[i], vx = (q.x - q.px) * 0.985, vy = (q.y - q.py) * 0.985;
-    q.px = q.x; q.py = q.y; q.x += vx; q.y += vy + 0.3;
-  }
-  p[0].x = p[0].px = A.x; p[0].y = p[0].py = A.y; p[NP-1].x = p[NP-1].px = B.x; p[NP-1].y = p[NP-1].py = B.y;
-  for (let it = 0; it < 18; it++) for (let i = 0; i < NP - 1; i++) {
-    const a = p[i], b = p[i+1], dx = b.x - a.x, dy = b.y - a.y, dist = Math.hypot(dx, dy);
-    if (dist <= seg || dist === 0) continue;
-    const wa = i === 0 ? 0 : 1, wb = i + 1 === NP - 1 ? 0 : 1, sum = wa + wb; if (!sum) continue;
-    const k = (dist - seg) / dist;
-    a.x += dx * k * wa / sum; a.y += dy * k * wa / sum; b.x -= dx * k * wb / sum; b.y -= dy * k * wb / sum;
-  }
-}
-function drawRope(r, alpha, ws, glow) {
-  const st = ROPES[r.style] || ROPES.hemp, w = st.w * ws, p = r.pts;
-  const path = () => {
-    ctx.beginPath(); ctx.moveTo(p[0].x, p[0].y);
-    for (let i = 1; i < NP - 1; i++) ctx.quadraticCurveTo(p[i].x, p[i].y, (p[i].x + p[i+1].x) / 2, (p[i].y + p[i+1].y) / 2);
-    ctx.lineTo(p[NP-1].x, p[NP-1].y);
-  };
-  ctx.globalAlpha = alpha; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-  if (glow) { path(); ctx.strokeStyle = 'rgba(10,108,255,.35)'; ctx.lineWidth = w + 9; ctx.stroke(); }
-  if (!isLight()) { path(); ctx.strokeStyle = 'rgba(10,108,255,.18)'; ctx.lineWidth = w + 12; ctx.stroke(); }
-  ctx.save(); ctx.translate(4, 8); path(); ctx.strokeStyle = (isLight() ? 'rgba(10,26,51,.13)' : 'rgba(0,0,0,.55)'); ctx.lineWidth = w + 2; ctx.stroke(); ctx.restore();
-  path(); ctx.strokeStyle = st.base; ctx.lineWidth = w; ctx.stroke();
-  path(); ctx.strokeStyle = st.hi; ctx.lineWidth = w * 0.5; ctx.globalAlpha = alpha * 0.85; ctx.stroke(); ctx.globalAlpha = alpha;
-  // усукване: коси чертички по дължината
-  const step = Math.max(2.2, w * 0.85); ctx.beginPath(); let carry = 0;
-  for (let i = 0; i < NP - 1; i++) {
-    const a = p[i], b = p[i+1], dx = b.x - a.x, dy = b.y - a.y, l = Math.hypot(dx, dy); if (!l) continue;
-    const tx = dx / l, ty = dy / l, nx = -ty, ny = tx;
-    for (let s = carry; s < l; s += step) {
-      const cx = a.x + tx * s, cy = a.y + ty * s;
-      ctx.moveTo(cx - nx * w * .47 - tx * w * .38, cy - ny * w * .47 - ty * w * .38);
-      ctx.lineTo(cx + nx * w * .47 + tx * w * .38, cy + ny * w * .47 + ty * w * .38);
-      carry = s + step - l;
-    }
-  }
-  ctx.strokeStyle = 'rgba(0,10,40,.38)'; ctx.lineWidth = Math.max(.8, w * 0.16); ctx.stroke();
-  for (const q of [p[0], p[NP-1]]) { ctx2.globalAlpha = alpha;
-  // възли
-    const g = ctx2.createRadialGradient(q.x - w * .3, q.y - w * .3, w * .1, q.x, q.y, w * 1.05);
-    g.addColorStop(0, st.hi); g.addColorStop(1, st.base);
-    ctx2.beginPath(); ctx2.arc(q.x, q.y, w * 1.0, 0, 6.2832); ctx2.fillStyle = g; ctx2.fill();
-    ctx2.strokeStyle = 'rgba(0,0,0,.5)'; ctx2.lineWidth = Math.max(.8, w * .14); ctx2.stroke();
-    ctx2.beginPath(); ctx2.arc(q.x, q.y, w * .55, .4, 2.6); ctx2.stroke();
-  }
-  ctx2.globalAlpha = 1;
-  ctx.globalAlpha = 1;
-}
+/* ---------- връзки ---------- */
+const NP = 24;
+function newLink(style) { return { pts: [], style: style || 'slate' }; }
 const DIRS = [[0, -1], [1, 0], [0, 1], [-1, 0]];
 function connPath(A, pa, B, pb) {
-  const da = DIRS[pa], db = pb == null ? null : DIRS[pb], pts = [];
-  if (conn === 'line') {
-    const d = Math.hypot(B.x - A.x, B.y - A.y), k = clamp(d * 0.5, 40, 220);
+  const da = DIRS[pa], db = pb == null ? null : DIRS[pb];
+  if (conn === 'straight') return { pts: [A, B], smooth: false };
+  if (conn === 'curve') {
+    const pts = [], d = Math.hypot(B.x - A.x, B.y - A.y), k = clamp(d * 0.5, 40, 220);
     const c1 = { x: A.x + da[0] * k, y: A.y + da[1] * k }, c2 = db ? { x: B.x + db[0] * k, y: B.y + db[1] * k } : B;
     for (let i = 0; i < NP; i++) { const t = i / (NP - 1), u = 1 - t;
       pts.push({ x: u*u*u*A.x + 3*u*u*t*c1.x + 3*u*t*t*c2.x + t*t*t*B.x, y: u*u*u*A.y + 3*u*u*t*c1.y + 3*u*t*t*c2.y + t*t*t*B.y }); }
     return { pts, smooth: true };
   }
-  const va = da[0] === 0, vb = db ? db[0] === 0 : va, out = 26;
+  const pts = [], va = da[0] === 0, vb = db ? db[0] === 0 : va, out = 26;
   const a1 = { x: A.x + da[0] * out, y: A.y + da[1] * out }, b1 = db ? { x: B.x + db[0] * out, y: B.y + db[1] * out } : B;
   pts.push(A, a1);
   if (va && vb) { const my = (a1.y + b1.y) / 2; pts.push({ x: a1.x, y: my }, { x: b1.x, y: my }); }
@@ -418,34 +375,29 @@ function connPath(A, pa, B, pb) {
   pts.push(b1, B);
   return { pts, smooth: false };
 }
-function drawConn(A, pa, B, pb, style, alpha, ws, glow, t, hitRope) {
-  const st = ROPES[style] || ROPES.blue, col = isLight() ? st.base : st.hi, w = 2.6 * ws;
+function drawConn(A, pa, B, pb, style, alpha, ws, glow, hit) {
+  const st = LINES[style] || LINES.slate, col = isLight() ? st.base : st.hi, w = 1.8 * ws;
   const { pts, smooth } = connPath(A, pa, B, pb);
-  if (hitRope) hitRope.pts.forEach((q, i) => { const p = pts[Math.min(i, pts.length - 1)]; q.x = p.x; q.y = p.y; });
+  if (hit) hit.pts = pts;
   const path = () => {
     ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y);
     if (smooth) { for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y); }
-    else for (let i = 1; i < pts.length - 1; i++) ctx.arcTo(pts[i].x, pts[i].y, pts[i + 1].x, pts[i + 1].y, 16);
-    ctx.lineTo(pts[pts.length - 1].x, pts[pts.length - 1].y);
+    else { for (let i = 1; i < pts.length - 1; i++) ctx.arcTo(pts[i].x, pts[i].y, pts[i + 1].x, pts[i + 1].y, 12); ctx.lineTo(pts[pts.length - 1].x, pts[pts.length - 1].y); }
   };
   ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.globalAlpha = alpha;
-  if (glow) { path(); ctx.strokeStyle = 'rgba(10,108,255,.3)'; ctx.lineWidth = w + 10; ctx.stroke(); }
-  path(); ctx.strokeStyle = col; ctx.globalAlpha = alpha * (isLight() ? .55 : .5); ctx.lineWidth = w; ctx.stroke();
-  ctx.save(); ctx.setLineDash([2, 22]); ctx.lineDashOffset = -(t * 0.04) % 24; path();
-  ctx.strokeStyle = isLight() ? st.base : '#fff'; ctx.globalAlpha = alpha * .9; ctx.lineWidth = w * 1.15; ctx.stroke(); ctx.restore();
-  for (const q of [A, B]) {
-    ctx2.globalAlpha = alpha; ctx2.beginPath(); ctx2.arc(q.x, q.y, 5.2 * ws, 0, 6.2832);
-    ctx2.fillStyle = isLight() ? '#fff' : '#000'; ctx2.fill(); ctx2.strokeStyle = col; ctx2.lineWidth = 2.4 * ws; ctx2.stroke();
-  }
+  if (glow) { path(); ctx.strokeStyle = 'rgba(10,108,255,.28)'; ctx.lineWidth = w + 8; ctx.stroke(); }
+  path(); ctx.strokeStyle = col; ctx.lineWidth = w; ctx.stroke();
+  const bg0 = isLight() ? '#fff' : '#000';
+  ctx2.globalAlpha = alpha;
+  ctx2.beginPath(); ctx2.arc(A.x, A.y, 3.6 * ws, 0, 6.2832); ctx2.fillStyle = col; ctx2.fill();
+  ctx2.beginPath(); ctx2.arc(B.x, B.y, 4.6 * ws, 0, 6.2832); ctx2.fillStyle = bg0; ctx2.fill(); ctx2.strokeStyle = col; ctx2.lineWidth = 1.8 * ws; ctx2.stroke();
   ctx.globalAlpha = 1; ctx2.globalAlpha = 1;
 }
-function setConn(c) {
-  conn = c; $('#conn').textContent = CONN_NAMES[c];
-  for (const rp of ropes.values()) rp.init = false;
-}
-function ropeDist(r, x, y) {
+const CONN_ORDER = ['elbow', 'curve', 'straight'];
+function setConn(c) { conn = c; $('#conn').textContent = CONN_NAMES[c]; }
+function linkDist(r, x, y) {
   let best = 1e9;
-  for (let i = 0; i < NP - 1; i++) {
+  for (let i = 0; i < r.pts.length - 1; i++) {
     const a = r.pts[i], b = r.pts[i+1], dx = b.x - a.x, dy = b.y - a.y, l2 = dx * dx + dy * dy;
     const t = l2 ? clamp(((x - a.x) * dx + (y - a.y) * dy) / l2, 0, 1) : 0;
     best = Math.min(best, Math.hypot(x - a.x - dx * t, y - a.y - dy * t));
@@ -467,9 +419,9 @@ function autoPorts(a, b) {
 }
 
 /* ---------- кадър ---------- */
-let acc = 0, last = performance.now(), link = null;
+let last = performance.now(), link = null;
 function frame(t) {
-  const dt = Math.min(0.05, (t - last) / 1000); last = t; acc += dt;
+  const dt = Math.min(0.05, (t - last) / 1000); last = t;
   drawBg(dt, t);
   for (const n of S.nodes) {
     const r = rt.get(n.id); if (!r) continue;
@@ -479,7 +431,7 @@ function frame(t) {
     r.ox *= 0.84; r.oy *= 0.84; if (Math.abs(r.ox) < .05) r.ox = 0; if (Math.abs(r.oy) < .05) r.oy = 0;
     const cx = n.x + r.ox, cy = n.y + r.oy - r.h / 2;
     const vx = cx - r.lcx; r.lcx = cx;
-    const target = clamp(-vx * 1.5, -17, 17);
+    const target = clamp(-vx * 0.6, -5, 5);
     r.angv += (target - r.ang) * 0.1; r.angv *= 0.86; r.ang += r.angv;
     let px = cx, py = cy;
     const an = r.anchor && nodeById(r.anchor);
@@ -490,29 +442,14 @@ function frame(t) {
     r.el.classList.toggle('gone', r.s < 0.5);
     r.el.style.display = r.s < 0.01 && want === 0 ? 'none' : '';
   }
-  // физика на въжетата с фиксирана стъпка
   const ends = [];
   for (const e of S.edges) {
-    const ra = rt.get(e.a), rb = rt.get(e.b), rope = ropes.get(e.id); if (!ra || !rb || !rope) continue;
-    const A = portPos(e.a, e.pa), B = portPos(e.b, e.pb), vis = Math.min(ra.sc, rb.sc);
-    ends.push({ e, rope, A, B, vis });
-  }
-  let lk = null;
-  if (link) { const A = portPos(link.from, link.port); lk = { rope: link.rope, A, B: link.cur, vis: 1 }; }
-  const RM = conn === 'rope';
-  if (RM) { for (const x of ends) if (x.vis < 0.03) lineRope(x.rope, x.A, x.B); else if (!x.rope.init) lineRope(x.rope, x.A, x.B);
-  if (lk && !lk.rope.init) lineRope(lk.rope, lk.A, lk.B); }
-  while (acc >= 1 / 60) {
-    acc -= 1 / 60;
-    if (RM) { for (const x of ends) if (x.vis >= 0.03) stepRope(x.rope, x.A, x.B, x.vis);
-    if (lk) stepRope(lk.rope, lk.A, lk.B, 1); }
+    const ra = rt.get(e.a), rb = rt.get(e.b), hit = links.get(e.id); if (!ra || !rb || !hit) continue;
+    ends.push({ e, hit, A: portPos(e.a, e.pa), B: portPos(e.b, e.pb), vis: Math.min(ra.sc, rb.sc) });
   }
   for (const [c, k] of [[ctx, cv], [ctx2, cv2]]) { c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, k.width, k.height); c.setTransform(dpr * view.z, 0, 0, dpr * view.z, dpr * view.x, dpr * view.y); }
-  for (const x of ends) if (x.vis >= 0.03) {
-    x.rope.style = x.e.style; const al = Math.min(1, x.vis * 1.5), ws = 0.5 + 0.5 * x.vis;
-    if (RM) drawRope(x.rope, al, ws, x.e.id === selRope); else drawConn(x.A, x.e.pa, x.B, x.e.pb, x.e.style, al, ws, x.e.id === selRope, t, x.rope);
-  }
-  if (lk) { if (RM) drawRope(lk.rope, 1, 1, false); else drawConn(lk.A, link.port, lk.B, null, 'blue', 1, 1, false, t, null); }
+  for (const x of ends) if (x.vis >= 0.03) drawConn(x.A, x.e.pa, x.B, x.e.pb, x.e.style, Math.min(1, x.vis * 1.5), 0.5 + 0.5 * x.vis, x.e.id === selLink, x.hit);
+  if (link) drawConn(portPos(link.from, link.port), link.port, link.cur, null, 'slate', 1, 1, false, null);
   placeBar();
   requestAnimationFrame(frame);
 }
@@ -558,7 +495,7 @@ function addNode(x, y, edit) {
   return n;
 }
 function deleteSelection() {
-  if (selRope) { S.edges = S.edges.filter((e) => e.id !== selRope); selRope = null; reindex(); commit(); closeRopeMenu(); return; }
+  if (selLink) { S.edges = S.edges.filter((e) => e.id !== selLink); selLink = null; reindex(); commit(); closeLinkMenu(); return; }
   if (!sel.size) return;
   S.nodes = S.nodes.filter((n) => !sel.has(n.id)); sel = new Set(); reindex(); commit();
 }
@@ -582,7 +519,7 @@ function connect(ids, target, port, cur) {
       pa = port; let best = 1e9; pb = 0;
       for (let p = 0; p < 4; p++) { const q = portPos(target, p), d = Math.hypot(q.x - cur.x, q.y - cur.y); if (d < best) { best = d; pb = p; } }
     } else [pa, pb] = autoPorts(id, target);
-    S.edges.push({ id: uid(), a: id, b: target, pa, pb, style: 'blue' }); made++;
+    S.edges.push({ id: uid(), a: id, b: target, pa, pb, style: 'slate' }); made++;
   }
   if (made) { reindex(); commit(); }
 }
@@ -654,11 +591,11 @@ $vp.addEventListener('dblclick', (e) => {
 /* ---------- мишка ---------- */
 let mode = null;
 const $mq = $('#mq');
-function closeRopeMenu() { $('#rmenu').style.display = 'none'; }
-function openRopeMenu(eid, x, y) {
-  selRope = eid; const m = $('#rmenu'); m.innerHTML = '';
-  for (const k in ROPES) { const b = document.createElement('button'); b.className = 'row'; b.innerHTML = `<span class="chip" style="background:linear-gradient(${ROPES[k].hi},${ROPES[k].base})"></span>${ROPES[k].n}`; b.onclick = () => { S.edges.find((e) => e.id === eid).style = k; closeRopeMenu(); commit(); }; m.appendChild(b); }
-  const d = document.createElement('button'); d.className = 'row del'; d.textContent = 'Изтрий въжето'; d.onclick = deleteSelection; m.appendChild(d);
+function closeLinkMenu() { $('#rmenu').style.display = 'none'; }
+function openLinkMenu(eid, x, y) {
+  selLink = eid; const m = $('#rmenu'); m.innerHTML = '';
+  for (const k in LINES) { const b = document.createElement('button'); b.className = 'row'; b.innerHTML = `<span class="chip" style="background:${LINES[k].base}"></span>${LINES[k].n}`; b.onclick = () => { S.edges.find((e) => e.id === eid).style = k; closeLinkMenu(); commit(); }; m.appendChild(b); }
+  const d = document.createElement('button'); d.className = 'row del'; d.textContent = 'Изтрий връзката'; d.onclick = deleteSelection; m.appendChild(d);
   m.style.display = 'block'; m.style.left = clamp(x + 8, 8, W - 200) + 'px'; m.style.top = clamp(y + 8, 8, H - 260) + 'px';
 }
 $vp.addEventListener('pointerdown', (e) => {
@@ -666,28 +603,28 @@ $vp.addEventListener('pointerdown', (e) => {
   const t = e.target;
   if (t.closest('.editing .f')) return;
   if (document.activeElement && document.activeElement !== document.body && document.activeElement.blur) document.activeElement.blur();
-  closeRopeMenu(); $('#help').style.display = 'none';
+  closeLinkMenu(); $('#help').style.display = 'none';
   const nodeEl = t.closest('.node'), wp = toWorld(e.clientX, e.clientY);
   if (e.button === 1) { e.preventDefault(); mode = { type: 'pan', sx: e.clientX, sy: e.clientY, vx: view.x, vy: view.y }; $vp.classList.add('panning'); return; }
   if (t.closest('.badge') && nodeEl) { e.preventDefault(); toggleCollapse(nodeEl.dataset.id); return; }
   if (t.closest('.port') && nodeEl) {
     e.preventDefault(); const id = nodeEl.dataset.id, port = +t.closest('.port').dataset.p;
     if (!sel.has(id)) { sel = new Set([id]); render(); }
-    link = { from: id, port, ids: sel.size > 1 ? [...sel] : [id], rope: newRope('blue'), cur: wp };
+    link = { from: id, port, ids: sel.size > 1 ? [...sel] : [id], cur: wp };
     mode = { type: 'link' }; document.body.classList.add('linking'); return;
   }
   if (nodeEl) {
-    e.preventDefault(); const id = nodeEl.dataset.id; selRope = null;
+    e.preventDefault(); const id = nodeEl.dataset.id; selLink = null;
     if (e.shiftKey) { sel.has(id) ? sel.delete(id) : sel.add(id); render(); return; }
     if (!sel.has(id)) { sel = new Set([id]); render(); }
     const orig = new Map(); sel.forEach((i) => { const n = nodeById(i); orig.set(i, { x: n.x, y: n.y }); rt.get(i).el.style.zIndex = ++zTop; });
     mode = { type: 'drag', id, sx: e.clientX, sy: e.clientY, orig, moved: false }; return;
   }
-  // въже?
+  // връзка?
   let hit = null, bd = 1e9;
-  for (const ed of S.edges) { const r = ropes.get(ed.id); if (!r || Math.min(rt.get(ed.a).sc, rt.get(ed.b).sc) < .5) continue; const d = ropeDist(r, wp.x, wp.y); if (d < bd) { bd = d; hit = ed; } }
-  if (hit && bd < 9 + 4 / view.z) { e.preventDefault(); sel = new Set(); render(); openRopeMenu(hit.id, e.clientX, e.clientY); return; }
-  e.preventDefault(); selRope = null;
+  for (const ed of S.edges) { const r = links.get(ed.id); if (!r || Math.min(rt.get(ed.a).sc, rt.get(ed.b).sc) < .5) continue; const d = linkDist(r, wp.x, wp.y); if (d < bd) { bd = d; hit = ed; } }
+  if (hit && bd < 9 + 4 / view.z) { e.preventDefault(); sel = new Set(); render(); openLinkMenu(hit.id, e.clientX, e.clientY); return; }
+  e.preventDefault(); selLink = null;
   if (e.shiftKey) { mode = { type: 'marquee', sx: e.clientX, sy: e.clientY, base: new Set(sel) }; return; }
   mode = { type: 'pan', sx: e.clientX, sy: e.clientY, vx: view.x, vy: view.y, moved: false }; $vp.classList.add('panning');
 });
@@ -741,14 +678,14 @@ addEventListener('keydown', (e) => {
   if ((e.ctrlKey || e.metaKey) && k === 'z' && !e.shiftKey) { e.preventDefault(); undo(); }
   else if ((e.ctrlKey || e.metaKey) && (k === 'y' || (k === 'z' && e.shiftKey))) { e.preventDefault(); redo(); }
   else if (e.key === 'Delete' || e.key === 'Backspace') { deleteSelection(); }
-  else if (e.key === 'Escape') { sel = new Set(); selRope = null; closeRopeMenu(); render(); }
+  else if (e.key === 'Escape') { sel = new Set(); selLink = null; closeLinkMenu(); render(); }
 });
 
 /* ---------- лента ---------- */
 $('#add').onclick = () => { const p = toWorld(W / 2 + (Math.random() - .5) * 120, H / 2 - 60 + (Math.random() - .5) * 80); addNode(p.x, p.y, true); };
 $('#arr').onclick = () => { arrange(false); reindex(); commit(); setTimeout(fit, 700); };
 $('#fit').onclick = fit;
-$('#conn').onclick = () => { setConn(conn === 'rope' ? 'line' : conn === 'line' ? 'elbow' : 'rope'); saveSoon(); };
+$('#conn').onclick = () => { setConn(CONN_ORDER[(CONN_ORDER.indexOf(conn) + 1) % CONN_ORDER.length]); saveSoon(); };
 $('#undo').onclick = undo; $('#redo').onclick = redo;
 document.querySelectorAll('.bgb').forEach((b) => b.onclick = () => { bg = b.dataset.bg; applyBg(); saveSoon(); });
 $('#helpb').onclick = (e) => { e.stopPropagation(); const h = $('#help'); h.style.display = h.style.display === 'block' ? 'none' : 'block'; };
@@ -760,7 +697,7 @@ $('#imp').onclick = () => $('#fileJson').click();
 $('#fileJson').onchange = (e) => {
   const f = e.target.files[0]; e.target.value = ''; if (!f) return;
   f.text().then((t) => {
-    try { const d = JSON.parse(t), s = d.S || d; if (!Array.isArray(s.nodes) || !Array.isArray(s.edges)) throw 0; S = { nodes: s.nodes, edges: s.edges, collapsed: s.collapsed || [] }; if (['void','light','white','night'].includes(d.bg)) { bg = d.bg; applyBg(); } if (CONN_NAMES[d.conn]) { conn = d.conn; setConn(conn); } sel = new Set(); reindex(); commit(); fit(); }
+    try { const d = JSON.parse(t), s = d.S || d; if (!Array.isArray(s.nodes) || !Array.isArray(s.edges)) throw 0; S = { nodes: s.nodes, edges: s.edges, collapsed: s.collapsed || [] }; if (['void','light','white','night'].includes(d.bg)) { bg = d.bg; applyBg(); } setConn(CONN_NAMES[d.conn] ? d.conn : d.conn === 'line' ? 'curve' : 'elbow'); sel = new Set(); reindex(); commit(); fit(); }
     catch (err) { alert('Файлът не е валидна органиграма.'); }
   });
 };
@@ -781,12 +718,12 @@ function demo() {
       mk('i', 'Поддръжка', 'Калоян Начев', COLORS[2], '⚙️'),
       mk('j', 'Счетоводство', 'Весела Атанасова', COLORS[4], '🏢'),
     ],
-    edges: [['a','b'],['a','c'],['a','d'],['b','e'],['b','f'],['c','g'],['c','h'],['c','i'],['d','j']].map(([a, b]) => ({ id: uid(), a, b, pa: 2, pb: 0, style: 'blue' })),
+    edges: [['a','b'],['a','c'],['a','d'],['b','e'],['b','f'],['c','g'],['c','h'],['c','i'],['d','j']].map(([a, b]) => ({ id: uid(), a, b, pa: 2, pb: 0, style: 'slate' })),
     collapsed: [],
   };
 }
 let loaded = false;
-try { const d = JSON.parse(localStorage.getItem(KEY)); if (d && d.S && d.S.nodes.length) { S = d.S; view = d.view || view; bg = ['void','light','white','night'].includes(d.bg) ? d.bg : bg; if (CONN_NAMES[d.conn]) conn = d.conn; loaded = true; } } catch (e) {}
+try { const d = JSON.parse(localStorage.getItem(KEY)); if (d && d.S && d.S.nodes.length) { S = d.S; view = d.view || view; bg = ['void','light','white','night'].includes(d.bg) ? d.bg : bg; conn = CONN_NAMES[d.conn] ? d.conn : d.conn === 'line' ? 'curve' : 'elbow'; loaded = true; } } catch (e) {}
 if (!loaded) demo();
 initParts();
 setConn(conn);
