@@ -46,8 +46,13 @@ body[data-bg=night] #brand img { filter: brightness(0) invert(1); }
 .title { font-size: 17px; font-weight: 500; letter-spacing: -0.02em; line-height: 1.2; }
 .name { font-size: 13px; font-weight: 300; color: var(--sub); margin-top: 9px; line-height: 1.4; }
 .note { font-size: 12px; font-weight: 300; line-height: 1.45; color: var(--sub); margin-top: 9px; padding-top: 9px; border-top: 1px solid var(--edge); }
-.node:not(.editing) .f:empty { display: none; }
-.node:not(.editing) .title:empty { display: block; } .node:not(.editing) .title:empty::before { content: 'Без име'; opacity: .45; }
+.node:not(.editing) .f.empty { display: none; }
+.node:not(.editing).nohead .head { display: none; }
+.node:not(.editing) .name.first { margin-top: 0; }
+.node:not(.editing) .note.first { margin-top: 0; padding-top: 0; border-top: 0; }
+.node:not(.editing).blank { min-height: 56px; }
+.node:not(.editing).blank .head { display: flex; } .node:not(.editing).blank .title.empty { display: block; }
+.node:not(.editing).blank .title.empty::before { content: 'Без име'; opacity: .45; }
 .editing { cursor: text; }
 .editing .f:empty::before { content: attr(data-ph); opacity: .45; }
 .editing .f { border-radius: 6px; box-shadow: 0 0 0 1px var(--edge); padding: 1px 4px; margin-left: -4px; margin-right: -4px; }
@@ -323,7 +328,18 @@ function render() {
     const el = r.el;
     el.style.setProperty('--c', n.color);
     el.classList.toggle('sel', sel.has(n.id));
-    if (!el.classList.contains('editing')) for (const f of ['title', 'name', 'note']) { const t = el.querySelector('[data-f=' + f + ']'); if (t.textContent !== (n[f] || '')) t.textContent = n[f] || ''; }
+    if (!el.classList.contains('editing')) {
+      for (const f of ['title', 'name', 'note']) {
+        const t = el.querySelector('[data-f=' + f + ']'), v = n[f] || '';
+        if (t.textContent !== v || (!v && t.firstChild)) t.textContent = v;    // и остатъчен <br> след изтриване
+        t.classList.toggle('empty', !v);
+      }
+      const head = !!(n.title || n.icon || n.photo);
+      el.classList.toggle('nohead', !head);
+      el.classList.toggle('blank', !head && !n.name && !n.note);
+      el.querySelector('.name').classList.toggle('first', !head);
+      el.querySelector('.note').classList.toggle('first', !head && !n.name);
+    }
     const ico = el.querySelector('.ico');
     ico.style.backgroundImage = n.photo ? `url(${n.photo})` : ''; ico.textContent = n.photo ? '' : (n.icon || ''); ico.style.display = (n.photo || n.icon) ? '' : 'none';
   }
@@ -786,7 +802,7 @@ async function exportPdf() {
         const cs = getComputedStyle(f), px = parseFloat(cs.paddingLeft) + parseFloat(cs.borderLeftWidth), py = parseFloat(cs.paddingTop) + parseFloat(cs.borderTopWidth);
         const fx = left + 1 + f.offsetLeft, fy = top + 1 + f.offsetTop, lhh = parseFloat(cs.lineHeight) || parseFloat(cs.fontSize) * 1.3;
         const txt = n[k] || (k === 'title' ? 'Без име' : ''); if (!txt) continue;
-        if (k === 'note') { g.fillStyle = 'rgba(10,26,51,.14)'; g.fillRect(fx, fy, f.offsetWidth, 1); }
+        if (k === 'note' && parseFloat(cs.borderTopWidth) > 0) { g.fillStyle = 'rgba(10,26,51,.14)'; g.fillRect(fx, fy, f.offsetWidth, 1); }
         g.font = FF(cs); if ('letterSpacing' in g) g.letterSpacing = cs.letterSpacing === 'normal' ? '0px' : cs.letterSpacing;
         g.fillStyle = k === 'title' ? '#0a1a33' : '#45556a'; g.globalAlpha = n[k] ? 1 : .45;
         wrapText(g, txt, el.clientWidth - parseFloat(getComputedStyle(el).paddingRight) - f.offsetLeft - px * 2).forEach((ln, i) => g.fillText(ln, fx + px, fy + py + i * lhh + lhh / 2 + .5));
