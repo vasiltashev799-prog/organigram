@@ -164,3 +164,12 @@ test('първоначална настройка: само с код, само 
   deps.setupToken = '';
   assert.equal((await call(null, 'POST', '/setup', { email: 'ana@x.bg', password: '12345678', token: '' })).status, 403);               // без зададен код е изключено
 });
+
+test('стрелките се запазват, а невалидни стойности се отхвърлят', () => {
+  const d = data(); d.S.cfg.arrow = 'both'; d.S.edges[0].arrow = 'start';
+  let c = sanitizeData(d);
+  assert.equal(c.S.cfg.arrow, 'both'); assert.equal(c.S.edges[0].arrow, 'start');
+  d.S.cfg.arrow = '<img>'; d.S.edges[0].arrow = 'x';
+  c = sanitizeData(d);
+  assert.equal(c.S.cfg.arrow, 'none'); assert.equal(c.S.edges[0].arrow, undefined);
+});

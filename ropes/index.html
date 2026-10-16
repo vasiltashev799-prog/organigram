@@ -100,6 +100,7 @@ button:focus-visible, .sw:focus-visible { outline: 2px solid var(--accent); outl
 #rmenu .mrow span { width: 68px; flex: none; }
 #rmenu .mrow input[type=color] { width: 36px; height: 26px; padding: 0; border: 1px solid var(--line); border-radius: 8px; background: transparent; cursor: pointer; }
 #rmenu .mrow input[type=range] { flex: 1; min-width: 0; accent-color: var(--accent); }
+#rmenu .mrow select { flex: 1; width: 100%; }
 #rmenu .mrow b { width: 24px; text-align: right; font-weight: 500; flex: none; }
 #rmenu .row { display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 10px; border: 0; background: transparent; color: var(--ink); font: 400 14px var(--font); border-radius: 12px; cursor: pointer; text-align: left; }
 #rmenu .row:hover { background: rgba(10,108,255,.08); }
@@ -180,6 +181,9 @@ select.fld { width: auto; padding: 9px 10px; }
 #roBadge { display: none; font: 600 10.5px var(--font); letter-spacing: .06em; text-transform: uppercase; padding: 4px 10px; border-radius: 9999px; border: 1px solid var(--line); color: var(--ash); }
 body.ro #roBadge { display: inline-block; } body.ro #share { display: none; }
 body.ro #add, body.ro #edit, body.ro #arr, body.ro #undo, body.ro #redo, body.ro #conn, body.ro #lstyle, body.ro #imp, body.ro .port, body.ro #nbar, body.ro #rmenu { display: none !important; }
+#pmenu { position: fixed; z-index: 9; display: none; flex-direction: column; gap: 12px; width: 220px; padding: 14px; background: var(--pop); color: var(--ink); border: 1px solid var(--line); border-radius: 18px; box-shadow: 0 24px 60px -20px rgba(10,26,51,.45); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+#pmenu label { display: flex; align-items: center; gap: 10px; font: 400 14px var(--font); cursor: pointer; }
+#pmenu input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--accent); }
 #toast { position: fixed; left: 50%; bottom: 96px; transform: translate(-50%, 20px); z-index: 50; background: #0a1a33; color: #fff; padding: 11px 18px; border-radius: 14px; font-size: 14px; opacity: 0; pointer-events: none; transition: opacity .3s, transform .3s; max-width: calc(100% - 32px); }
 #toast.on { opacity: 1; transform: translate(-50%, 0); }
 </style>
@@ -237,6 +241,7 @@ body.ro #add, body.ro #edit, body.ro #arr, body.ro #undo, body.ro #redo, body.ro
 <div id="top"><button class="tbtn" id="back" title="Към всички органиграми">← Органиграми</button><button class="tbtn" id="ctitle" title="Преименувай"></button><span id="roBadge">Само четене</span><span id="saveState"></span><button class="tbtn" id="share" title="Сподели с колеги">Сподели</button></div>
 <div id="screen" hidden></div>
 <div id="modal" hidden></div>
+<div id="pmenu" role="dialog" aria-label="Настройки на PDF"><label><input type="checkbox" id="pdfDate" checked><span>Дата горе вдясно</span></label><button class="btn primary" id="pdfGo">Свали PDF</button></div>
 <div id="toast" role="status"></div>
 
 <script>
@@ -429,7 +434,7 @@ function connPath(A, pa, B, pb) {
   const da = DIRS[pa], db = pb == null ? null : DIRS[pb];
   if (conn === 'straight') return { pts: [A, B], smooth: false };
   if (conn === 'curve') {
-    const pts = [], d = Math.hypot(B.x - A.x, B.y - A.y), k = clamp(d * 0.5, 40, 220);
+    const pts = [], d = Math.hypot(B.x - A.x, B.y - A.y), ax = da[0] * (B.x - A.x) + da[1] * (B.y - A.y), k = ax > 0 ? clamp(ax * 0.5, 30, 220) : clamp(d * 0.5, 40, 220);   // без преливане, когато звената са близо
     const c1 = { x: A.x + da[0] * k, y: A.y + da[1] * k }, c2 = db ? { x: B.x + db[0] * k, y: B.y + db[1] * k } : B;
     for (let i = 0; i < NP; i++) { const t = i / (NP - 1), u = 1 - t;
       pts.push({ x: u*u*u*A.x + 3*u*u*t*c1.x + 3*u*t*t*c2.x + t*t*t*B.x, y: u*u*u*A.y + 3*u*u*t*c1.y + 3*u*t*t*c2.y + t*t*t*B.y }); }
@@ -458,7 +463,18 @@ function roundedPath(g, pts, R) {
   }
   g.lineTo(q[q.length - 1].x, q[q.length - 1].y);
 }
-function drawConn(A, pa, B, pb, col, gl, alpha, ws, sel, hit, g = ctx, g2 = ctx2, light = isLight()) {
+function arrowHead(g, x, y, dx, dy, s, col) {   // връх в (x,y), сочи по (dx,dy)
+  const l = Math.hypot(dx, dy) || 1; dx /= l; dy /= l;
+  g.beginPath(); g.moveTo(x, y); g.lineTo(x - dx * s - dy * s * .5, y - dy * s + dx * s * .5); g.lineTo(x - dx * s + dy * s * .5, y - dy * s - dx * s * .5); g.closePath();
+  g.fillStyle = col; g.fill(); g.strokeStyle = col; g.lineWidth = 1; g.lineJoin = 'round'; g.stroke();
+}
+// посока на линията при края: от най-близката различна точка към края
+const tangent = (pts, end) => {
+  const e = end ? pts[pts.length - 1] : pts[0];
+  for (let i = 1; i < pts.length; i++) { const q = end ? pts[pts.length - 1 - i] : pts[i]; if (Math.hypot(e.x - q.x, e.y - q.y) > 0.5) return [e.x - q.x, e.y - q.y]; }
+  return [0, 1];
+};
+function drawConn(A, pa, B, pb, col, gl, alpha, ws, sel, hit, arrow = 'none', g = ctx, g2 = ctx2, light = isLight()) {
   const w = 1.8 * ws, { pts, smooth } = connPath(A, pa, B, pb);
   if (hit) hit.pts = pts;
   const path = () => {
@@ -471,8 +487,10 @@ function drawConn(A, pa, B, pb, col, gl, alpha, ws, sel, hit, g = ctx, g2 = ctx2
   path(); g.globalAlpha = alpha; g.strokeStyle = col; g.lineWidth = w; g.stroke();
   const bg0 = light ? '#fff' : '#000';
   g2.globalAlpha = alpha;
-  g2.beginPath(); g2.arc(A.x, A.y, 3.6 * ws, 0, 6.2832); g2.fillStyle = col; g2.fill();
-  g2.beginPath(); g2.arc(B.x, B.y, 4.6 * ws, 0, 6.2832); g2.fillStyle = bg0; g2.fill(); g2.strokeStyle = col; g2.lineWidth = 1.8 * ws; g2.stroke();
+  if (arrow === 'start' || arrow === 'both') { const [dx, dy] = tangent(pts, false); arrowHead(g2, A.x, A.y, dx, dy, 11 * ws, col); }
+  else { g2.beginPath(); g2.arc(A.x, A.y, 3.6 * ws, 0, 6.2832); g2.fillStyle = col; g2.fill(); }
+  if (arrow === 'end' || arrow === 'both') { const [dx, dy] = tangent(pts, true); arrowHead(g2, B.x, B.y, dx, dy, 11 * ws, col); }
+  else { g2.beginPath(); g2.arc(B.x, B.y, 4.6 * ws, 0, 6.2832); g2.fillStyle = bg0; g2.fill(); g2.strokeStyle = col; g2.lineWidth = 1.8 * ws; g2.stroke(); }
   g.globalAlpha = 1; g2.globalAlpha = 1;
 }
 const CONN_ORDER = ['elbow', 'curve', 'straight'];
@@ -530,8 +548,8 @@ function frame(t) {
     ends.push({ e, hit, A: portPos(e.a, e.pa), B: portPos(e.b, e.pb), vis: Math.min(ra.sc, rb.sc) });
   }
   for (const [c, k] of [[ctx, cv], [ctx2, cv2]]) { c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, k.width, k.height); c.setTransform(dpr * view.z, 0, 0, dpr * view.z, dpr * view.x, dpr * view.y); }
-  for (const x of ends) if (x.vis >= 0.03) drawConn(x.A, x.e.pa, x.B, x.e.pb, x.e.color ?? S.cfg.color ?? defLinkColor(), x.e.glow ?? S.cfg.glow, Math.min(1, x.vis * 1.5), 0.5 + 0.5 * x.vis, x.e.id === selLink, x.hit);
-  if (link) drawConn(portPos(link.from, link.port), link.port, link.cur, null, defLinkColor(), 0.3, 1, 1, false, null);
+  for (const x of ends) if (x.vis >= 0.03) drawConn(x.A, x.e.pa, x.B, x.e.pb, x.e.color ?? S.cfg.color ?? defLinkColor(), x.e.glow ?? S.cfg.glow, Math.min(1, x.vis * 1.5), 0.5 + 0.5 * x.vis, x.e.id === selLink, x.hit, x.e.arrow ?? S.cfg.arrow ?? 'none');
+  if (link) drawConn(portPos(link.from, link.port), link.port, link.cur, null, defLinkColor(), 0.3, 1, 1, false, null, 'none');
   placeBar();
   requestAnimationFrame(frame);
 }
@@ -678,18 +696,20 @@ const $mq = $('#mq');
 function closeLinkMenu() { $('#rmenu').style.display = 'none'; }
 function openLinkMenu(eid, x, y, above) {
   selLink = eid; const m = $('#rmenu'), one = eid ? S.edges.find((e) => e.id === eid) : null;
-  const tgt = one || S.cfg, curColor = () => tgt.color ?? S.cfg.color ?? defLinkColor(), curGlow = () => tgt.glow ?? S.cfg.glow;
+  const tgt = one || S.cfg, curColor = () => tgt.color ?? S.cfg.color ?? defLinkColor(), curGlow = () => tgt.glow ?? S.cfg.glow, curArrow = () => tgt.arrow ?? S.cfg.arrow ?? 'none';
   m.innerHTML = `<div class="mt">${one ? 'Тази връзка' : 'Всички връзки'}</div><div class="sws"></div>
     <label class="mrow"><span>Свой цвят</span><input type="color" id="lc"></label>
-    <label class="mrow"><span>Блясък</span><input type="range" id="lg" min="0" max="100"><b id="lgv"></b></label>`;
-  const sws = m.querySelector('.sws'), lc = $('#lc'), lg = $('#lg'), lgv = $('#lgv');
+    <label class="mrow"><span>Блясък</span><input type="range" id="lg" min="0" max="100"><b id="lgv"></b></label>
+    <label class="mrow"><span>Стрелки</span><select id="la" class="fld"><option value="none">Без стрелки</option><option value="end">Към подчиненото</option><option value="start">Към родителя</option><option value="both">В двете посоки</option></select></label>`;
+  const sws = m.querySelector('.sws'), lc = $('#lc'), lg = $('#lg'), lgv = $('#lgv'), la = $('#la');
   const apply = (p) => { Object.assign(tgt, p); if (!one) for (const e of S.edges) for (const k in p) delete e[k]; };
-  const sync = () => { lc.value = curColor(); lg.value = Math.round(curGlow() * 100); lgv.textContent = lg.value; sws.querySelectorAll('.sw').forEach((b) => b.classList.toggle('on', b.dataset.c === curColor())); };
+  const sync = () => { lc.value = curColor(); lg.value = Math.round(curGlow() * 100); lgv.textContent = lg.value; la.value = curArrow(); sws.querySelectorAll('.sw').forEach((b) => b.classList.toggle('on', b.dataset.c === curColor())); };
   for (const c of LINK_COLORS) { const b = document.createElement('button'); b.className = 'sw'; b.style.background = c; b.dataset.c = c; b.setAttribute('aria-label', 'Цвят ' + c); sws.appendChild(b); }
   const au = document.createElement('button'); au.className = 'tbtn auto'; au.textContent = 'Авто'; au.title = 'Цвят по тема'; sws.appendChild(au);
   sws.onclick = (e) => { const b = e.target.closest('button'); if (!b) return; apply({ color: b.classList.contains('auto') ? null : b.dataset.c }); sync(); commit(); };
   lc.oninput = () => apply({ color: lc.value }); lc.onchange = () => { sync(); commit(); };
   lg.oninput = () => { apply({ glow: lg.value / 100 }); lgv.textContent = lg.value; }; lg.onchange = commit;
+  la.onchange = () => { apply({ arrow: la.value }); commit(); };
   if (one) { const d = document.createElement('button'); d.className = 'row del'; d.textContent = 'Изтрий връзката'; d.onclick = deleteSelection; m.appendChild(d); }
   sync(); m.style.display = 'block';
   m.style.left = clamp(x - (above ? m.offsetWidth / 2 : -8), 8, W - m.offsetWidth - 8) + 'px';
@@ -701,7 +721,7 @@ $vp.addEventListener('pointerdown', (e) => {
   if (t.closest('.editing .f')) return;
   const wasEditing = editing;
   if (document.activeElement && document.activeElement !== document.body && document.activeElement.blur) document.activeElement.blur();
-  closeLinkMenu(); $('#help').style.display = 'none';
+  closeLinkMenu(); $('#help').style.display = 'none'; $('#pmenu').style.display = 'none';
   const nodeEl = t.closest('.node'), wp = toWorld(e.clientX, e.clientY);
   if (e.button === 1) { e.preventDefault(); mode = { type: 'pan', sx: e.clientX, sy: e.clientY, vx: view.x, vy: view.y }; $vp.classList.add('panning'); return; }
   if (!ro && t.closest('.port') && nodeEl) {
@@ -812,7 +832,8 @@ function makePdf(jpg, iw, ih, pw, ph, dx, dy, dw, dh) {
   push('xref\n0 6\n0000000000 65535 f \n' + [1, 2, 3, 4, 5].map((n) => String(offs[n]).padStart(10, '0') + ' 00000 n \n').join('') + `trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n${xr}\n%%EOF`);
   return new Blob(parts, { type: 'application/pdf' });
 }
-async function exportPdf() {
+async function exportPdf(opts = {}) {
+  const withDate = opts.date !== false;
   if (editing) endEdit();
   const vis = S.nodes.filter((n) => !hid.has(n.id) && rt.get(n.id)); if (!vis.length) return;
   const btn = $('#pdf'); btn.disabled = true; btn.textContent = '…';
@@ -834,7 +855,7 @@ async function exportPdf() {
     g.fillStyle = 'rgba(10,26,51,.14)'; g.fillRect(M + lw + 12, M * 0.5 + 4, 1, 18);
     g.textBaseline = 'middle'; g.font = '600 13px "Noto Sans", sans-serif'; g.fillStyle = '#6b7a8c'; if ('letterSpacing' in g) g.letterSpacing = '1.2px';
     g.textAlign = 'left'; g.fillText('ОРГАНИГРАМА', M + lw + 24, M * 0.5 + 13);
-    g.textAlign = 'right'; g.fillText(new Date().toLocaleDateString('bg-BG'), CW - M, M * 0.5 + 13);
+    if (withDate) { g.textAlign = 'right'; g.fillText(new Date().toLocaleDateString('bg-BG'), CW - M, M * 0.5 + 13); }
     if ('letterSpacing' in g) g.letterSpacing = '0px'; g.textAlign = 'left';
     // връзки
     const tx = M - x0, ty = M + HEAD - y0;
@@ -844,7 +865,7 @@ async function exportPdf() {
     for (const e of S.edges) {
       if (!geo.has(e.a) || !geo.has(e.b)) continue;
       let col = e.color ?? S.cfg.color ?? '#5b6b80'; if (lum(col) > 0.85) col = '#5b6b80';   // бялото не личи на бял лист
-      drawConn(port(e.a, e.pa), e.pa, port(e.b, e.pb), e.pb, col, e.glow ?? S.cfg.glow, 1, 1, false, null, g, g2, true);
+      drawConn(port(e.a, e.pa), e.pa, port(e.b, e.pb), e.pb, col, e.glow ?? S.cfg.glow, 1, 1, false, null, e.arrow ?? S.cfg.arrow ?? 'none', g, g2, true);
     }
     // звена
     const FF = (cs) => `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
@@ -899,7 +920,13 @@ $('#exp').onclick = () => {
   const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify({ S, bg, conn }, null, 1)], { type: 'application/json' }));
   a.download = 'organigrama.json'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
 };
-$('#pdf').onclick = exportPdf;
+$('#pdf').onclick = (e) => {
+  e.stopPropagation(); const m = $('#pmenu'), r = e.currentTarget.getBoundingClientRect();
+  if (m.style.display === 'flex') { m.style.display = 'none'; return; }
+  try { $('#pdfDate').checked = localStorage.getItem('orgchart.pdfdate') !== '0'; } catch (x) {}
+  m.style.display = 'flex'; m.style.left = clamp(r.left + r.width / 2 - m.offsetWidth / 2, 8, W - m.offsetWidth - 8) + 'px'; m.style.top = (r.top - m.offsetHeight - 10) + 'px';
+};
+$('#pdfGo').onclick = () => { const d = $('#pdfDate').checked; try { localStorage.setItem('orgchart.pdfdate', d ? '1' : '0'); } catch (x) {} $('#pmenu').style.display = 'none'; exportPdf({ date: d }); };
 $('#imp').onclick = () => $('#fileJson').click();
 $('#fileJson').onchange = (e) => {
   const f = e.target.files[0]; e.target.value = ''; if (!f) return;

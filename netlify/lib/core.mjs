@@ -8,6 +8,7 @@ export class HttpError extends Error {
 export const MAX_DATA_BYTES = 2_000_000;
 export const ROLES = ['editor', 'viewer'];
 const CONNS = ['elbow', 'curve', 'straight'];
+const ARROWS = ['none', 'end', 'start', 'both'];
 
 export const normEmail = (e) => String(e || '').trim().toLowerCase();
 export const isEmail = (e) => e.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
@@ -77,6 +78,7 @@ export function sanitizeData(d) {
     const out = { id, a: e.a, b: e.b, pa: port(e.pa), pb: port(e.pb) };
     if (typeof e.color === 'string' && HEX.test(e.color)) out.color = e.color;
     if (Number.isFinite(e.glow)) out.glow = Math.max(0, Math.min(1, e.glow));
+    if (ARROWS.includes(e.arrow)) out.arrow = e.arrow;
     edges.push(out);
   }
   const cfg = d.S.cfg && typeof d.S.cfg === 'object' ? d.S.cfg : {};
@@ -84,7 +86,7 @@ export function sanitizeData(d) {
     S: {
       nodes, edges,
       collapsed: (Array.isArray(d.S.collapsed) ? d.S.collapsed : []).filter((id) => ids.has(id)),
-      cfg: { color: typeof cfg.color === 'string' && HEX.test(cfg.color) ? cfg.color : null, glow: Number.isFinite(cfg.glow) ? Math.max(0, Math.min(1, cfg.glow)) : 0.35 },
+      cfg: { color: typeof cfg.color === 'string' && HEX.test(cfg.color) ? cfg.color : null, glow: Number.isFinite(cfg.glow) ? Math.max(0, Math.min(1, cfg.glow)) : 0.35, arrow: ARROWS.includes(cfg.arrow) ? cfg.arrow : 'none' },
     },
     conn: CONNS.includes(d.conn) ? d.conn : 'elbow',
   };
