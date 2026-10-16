@@ -227,3 +227,15 @@ export async function adminDeleteUser(ctx, idp, id) {
   await idp.deleteUser(id);
   return { ok: true };
 }
+
+// Еднократна първоначална настройка: създава първия администратор, само ако още няма потребители.
+const sameStr = (a, b) => { let d = a.length ^ b.length; for (let i = 0; i < Math.max(a.length, b.length); i++) d |= (a.charCodeAt(i) || 0) ^ (b.charCodeAt(i) || 0); return d === 0; };
+export async function setupFirstAdmin(idp, adminEmails, setupToken, { email, password, token }) {
+  const e = normEmail(email);
+  if (!setupToken || typeof token !== 'string' || !sameStr(token, setupToken)) throw new HttpError(403, 'Грешен код за настройка.');
+  if (!adminEmails.has(e)) throw new HttpError(403, 'Този имейл не е в списъка на администраторите (ADMIN_EMAILS).');
+  if (typeof password !== 'string' || password.length < 8) throw new HttpError(400, 'Паролата трябва да е поне 8 символа.');
+  if ((await idp.listUsers({ perPage: 1 })).length) throw new HttpError(409, 'Настройката вече е направена.');
+  const u = await idp.createUser({ email: e, password });
+  return { id: u.id, email: u.email };
+}

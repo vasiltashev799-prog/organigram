@@ -127,6 +127,61 @@ body[data-bg=void] #brand img, body[data-bg=night] #brand img { filter: brightne
 body[data-bg=void] .port, body[data-bg=night] .port { background: #000; }
 body[data-bg=void] .port:hover, body[data-bg=night] .port:hover { background: var(--accent); }
 body[data-bg=void] #nbar #nDel:hover { color: #ff7a6e; }
+
+/* ---------- вход, мои органиграми, споделяне ---------- */
+#screen { position: fixed; inset: 0; z-index: 30; overflow: auto; color: var(--ink); background: color-mix(in srgb, var(--popc) 88%, transparent); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+#screen[hidden], #modal[hidden] { display: none; }
+body[data-bg=void] #screen img.logo, body[data-bg=night] #screen img.logo { filter: brightness(0) invert(1); }
+.center { min-height: 100%; display: grid; place-items: center; padding: 24px 16px; }
+.card { background: var(--pop); color: var(--ink); border: 1px solid var(--line); border-radius: 24px; box-shadow: 0 30px 80px -30px rgba(10,26,51,.5); padding: 28px; }
+.card h2 { margin: 0; font-size: 24px; font-weight: 400; letter-spacing: -.02em; }
+.login { width: min(380px, 100%); display: grid; gap: 12px; }
+.login img.logo { height: 28px; justify-self: start; margin-bottom: 4px; }
+.fld { font: 400 15px var(--font); color: var(--ink); background: transparent; border: 1px solid var(--line); border-radius: 12px; padding: 11px 13px; min-width: 0; width: 100%; }
+.fld:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+select.fld { width: auto; padding: 9px 10px; }
+.btn { font: 600 12px var(--font); letter-spacing: .08em; text-transform: uppercase; height: 40px; padding: 0 18px; border-radius: 9999px; border: 1px solid var(--line); background: transparent; color: var(--ink); cursor: pointer; white-space: nowrap; transition: background .3s, box-shadow .3s; }
+.btn:hover:not(:disabled) { background: rgba(10,108,255,.08); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn.primary:hover:not(:disabled) { background: var(--accent); box-shadow: 0 10px 30px -6px rgba(10,108,255,.55); }
+.btn.danger { color: #d92d20; } .btn:disabled { opacity: .5; cursor: default; }
+.err { color: #d92d20; margin: 0; font-size: 14px; min-height: 1em; }
+.hint { color: var(--ash); font-size: 13px; margin: 0; }
+.dash { max-width: 1080px; margin: 0 auto; padding: 22px 20px 60px; }
+.dash header { display: flex; align-items: center; gap: 14px; margin-bottom: 26px; flex-wrap: wrap; }
+.dash header img.logo { height: 26px; } .dash h1 { margin: 0; font-size: 22px; font-weight: 400; letter-spacing: -.02em; }
+.dash .sp { flex: 1; } .dash .who { color: var(--ash); font-size: 13px; }
+.dtools { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 26px; }
+.dash h3 { margin: 26px 0 12px; font: 600 12px var(--font); letter-spacing: .1em; text-transform: uppercase; color: var(--ash); }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; }
+.ccard { background: var(--pop); border: 1px solid var(--line); border-radius: 20px; padding: 18px; cursor: pointer; display: grid; gap: 6px; align-content: start; transition: box-shadow .3s, transform .3s; }
+.ccard:hover, .ccard:focus-visible { box-shadow: 0 20px 40px -22px rgba(10,26,51,.5); transform: translateY(-2px); outline: none; border-color: var(--accent); }
+.ccard h4 { margin: 0; font-size: 17px; font-weight: 500; letter-spacing: -.02em; overflow-wrap: anywhere; }
+.ccard .meta { margin: 0; color: var(--ash); font-size: 12.5px; }
+.cact { display: flex; gap: 6px; margin-top: 8px; }
+.cact button { font: 600 11px var(--font); letter-spacing: .06em; text-transform: uppercase; height: 30px; padding: 0 12px; border-radius: 9999px; border: 1px solid var(--line); background: transparent; color: var(--ash); cursor: pointer; }
+.cact button:hover { color: var(--ink); background: rgba(10,108,255,.08); } .cact .del:hover { color: #d92d20; background: rgba(217,45,32,.08); }
+#modal { position: fixed; inset: 0; z-index: 40; background: rgba(5,13,28,.5); display: grid; place-items: center; padding: 16px; overflow: auto; }
+.modal { width: min(520px, 100%); display: grid; gap: 14px; position: relative; }
+.modal .close { position: absolute; right: 14px; top: 14px; width: 32px; height: 32px; border-radius: 50%; border: 0; background: transparent; color: var(--ash); font-size: 16px; cursor: pointer; }
+.modal .close:hover { background: rgba(10,108,255,.08); color: var(--ink); }
+.frow { display: flex; gap: 8px; flex-wrap: wrap; } .frow .fld:first-child { flex: 1; min-width: 160px; }
+.plist { display: grid; gap: 6px; max-height: 260px; overflow: auto; }
+.prow { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 12px; }
+.prow .pem { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; font-size: 14px; }
+.prow .x { width: 30px; height: 30px; border-radius: 50%; border: 0; background: transparent; color: var(--ash); cursor: pointer; } .prow .x:hover { color: #d92d20; background: rgba(217,45,32,.08); }
+.pill { font: 600 10.5px var(--font); letter-spacing: .06em; text-transform: uppercase; padding: 3px 9px; border-radius: 9999px; border: 1px solid var(--line); color: var(--ash); justify-self: start; }
+#top { position: fixed; right: 20px; top: 16px; z-index: 6; display: none; align-items: center; gap: 4px; padding: 5px 8px; max-width: calc(100% - 40px); background: var(--ui); border: 1px solid var(--line); border-radius: 18px; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 16px 40px -20px rgba(10,26,51,.4); }
+#top .tbtn { height: 34px; font-size: 11px; padding: 0 12px; }
+#ctitle { text-transform: none !important; letter-spacing: 0 !important; font-weight: 600 !important; font-size: 13px !important; max-width: 220px; overflow: hidden; text-overflow: ellipsis; color: var(--ink) !important; }
+#saveState { font: 500 12px var(--font); color: var(--ash); padding: 0 8px; white-space: nowrap; }
+#saveState:empty { display: none; }
+#saveState[data-k=ok]::before { content: '✓ '; color: #12b886; } #saveState[data-k=err] { color: #d92d20; } #saveState[data-k=wait] { color: var(--accent); }
+#roBadge { display: none; font: 600 10.5px var(--font); letter-spacing: .06em; text-transform: uppercase; padding: 4px 10px; border-radius: 9999px; border: 1px solid var(--line); color: var(--ash); }
+body.ro #roBadge { display: inline-block; } body.ro #share { display: none; }
+body.ro #add, body.ro #edit, body.ro #arr, body.ro #undo, body.ro #redo, body.ro #conn, body.ro #lstyle, body.ro #imp, body.ro .port, body.ro #nbar, body.ro #rmenu { display: none !important; }
+#toast { position: fixed; left: 50%; bottom: 96px; transform: translate(-50%, 20px); z-index: 50; background: #0a1a33; color: #fff; padding: 11px 18px; border-radius: 14px; font-size: 14px; opacity: 0; pointer-events: none; transition: opacity .3s, transform .3s; max-width: calc(100% - 32px); }
+#toast.on { opacity: 1; transform: translate(-50%, 0); }
 </style>
 </head>
 <body data-bg="light">
@@ -178,6 +233,11 @@ body[data-bg=void] #nbar #nDel:hover { color: #ff7a6e; }
 </div>
 <input type="file" id="fileJson" accept=".json,application/json" hidden>
 <input type="file" id="filePhoto" accept="image/*" hidden>
+
+<div id="top"><button class="tbtn" id="back" title="Към всички органиграми">← Органиграми</button><button class="tbtn" id="ctitle" title="Преименувай"></button><span id="roBadge">Само четене</span><span id="saveState"></span><button class="tbtn" id="share" title="Сподели с колеги">Сподели</button></div>
+<div id="screen" hidden></div>
+<div id="modal" hidden></div>
+<div id="toast" role="status"></div>
 
 <script>
 (() => {
@@ -353,13 +413,13 @@ function commit() {
   const s = snap();
   if (hist[hpos] === s) return;
   hist = hist.slice(0, hpos + 1); hist.push(s); if (hist.length > 100) hist.shift(); hpos = hist.length - 1;
-  updateButtons(); saveSoon();
+  updateButtons(); saveSoon(); cloudDirty();
 }
-function restore(s) { S = JSON.parse(s); reindex(); updateButtons(); saveSoon(); }
-function undo() { if (hpos > 0) { restore(hist[--hpos]); } }
-function redo() { if (hpos < hist.length - 1) { restore(hist[++hpos]); } }
+function restore(s) { S = JSON.parse(s); reindex(); updateButtons(); saveSoon(); cloudDirty(); }
+function undo() { if (!ro && hpos > 0) { restore(hist[--hpos]); } }
+function redo() { if (!ro && hpos < hist.length - 1) { restore(hist[++hpos]); } }
 function updateButtons() { $('#edit').disabled = sel.size !== 1; $('#undo').disabled = hpos <= 0; $('#redo').disabled = hpos >= hist.length - 1; }
-function saveSoon() { clearTimeout(saveT); saveT = setTimeout(() => { try { localStorage.setItem(KEY, JSON.stringify({ S, view, bg, conn })); } catch (e) {} }, 400); }
+function saveSoon() { clearTimeout(saveT); saveT = setTimeout(() => { try { if (cloud) localStorage.setItem('orgchart.prefs', JSON.stringify({ bg })); else localStorage.setItem(KEY, JSON.stringify({ S, view, bg, conn })); } catch (e) {} }, 400); }
 
 /* ---------- връзки ---------- */
 const NP = 24;
@@ -479,7 +539,7 @@ function frame(t) {
 /* ---------- панел на звеното ---------- */
 const $nbar = $('#nbar');
 function placeBar() {
-  if (sel.size === 1 && !mode && !editing) {
+  if (sel.size === 1 && !mode && !editing && !ro) {
     const id = [...sel][0], r = rt.get(id);
     if (r && r.sc > 0.9) {
       $nbar.style.display = 'flex';
@@ -517,6 +577,7 @@ function addNode(x, y, edit) {
   return n;
 }
 function deleteSelection() {
+  if (ro) return;
   if (selLink) { S.edges = S.edges.filter((e) => e.id !== selLink); selLink = null; reindex(); commit(); closeLinkMenu(); return; }
   if (!sel.size) return;
   S.nodes = S.nodes.filter((n) => !sel.has(n.id)); sel = new Set(); reindex(); commit();
@@ -584,6 +645,7 @@ function fit() {
 /* ---------- редакция ---------- */
 let editing = null;
 function startEdit(id, field) {
+  if (ro) return;
   const r = rt.get(id); if (!r) return;
   if (editing && editing !== id) endEdit();
   editing = id; r.el.classList.add('editing');
@@ -605,6 +667,7 @@ $world.addEventListener('keydown', (e) => {
   if (e.key === 'Enter' && !e.shiftKey && f.dataset.f !== 'note') { e.preventDefault(); const next = f.dataset.f === 'title' ? 'name' : 'note'; rt.get(editing).el.querySelector('[data-f=' + next + ']').focus(); }
 });
 $vp.addEventListener('dblclick', (e) => {
+  if (ro) return;
   if (e.target.closest('.node')) return;
   const p = toWorld(e.clientX, e.clientY); addNode(p.x, p.y - 40, true);
 });
@@ -641,7 +704,7 @@ $vp.addEventListener('pointerdown', (e) => {
   closeLinkMenu(); $('#help').style.display = 'none';
   const nodeEl = t.closest('.node'), wp = toWorld(e.clientX, e.clientY);
   if (e.button === 1) { e.preventDefault(); mode = { type: 'pan', sx: e.clientX, sy: e.clientY, vx: view.x, vy: view.y }; $vp.classList.add('panning'); return; }
-  if (t.closest('.port') && nodeEl) {
+  if (!ro && t.closest('.port') && nodeEl) {
     e.preventDefault(); const id = nodeEl.dataset.id, port = +t.closest('.port').dataset.p;
     if (!sel.has(id)) { sel = new Set([id]); render(); }
     link = { from: id, port, ids: sel.size > 1 ? [...sel] : [id], cur: wp };
@@ -657,7 +720,7 @@ $vp.addEventListener('pointerdown', (e) => {
   // връзка?
   let hit = null, bd = 1e9;
   for (const ed of S.edges) { const r = links.get(ed.id); if (!r || Math.min(rt.get(ed.a).sc, rt.get(ed.b).sc) < .5) continue; const d = linkDist(r, wp.x, wp.y); if (d < bd) { bd = d; hit = ed; } }
-  if (hit && bd < 9 + 4 / view.z) { e.preventDefault(); sel = new Set(); render(); openLinkMenu(hit.id, e.clientX, e.clientY); return; }
+  if (!ro && hit && bd < 9 + 4 / view.z) { e.preventDefault(); sel = new Set(); render(); openLinkMenu(hit.id, e.clientX, e.clientY); return; }
   e.preventDefault(); selLink = null;
   if (e.shiftKey) { mode = { type: 'marquee', sx: e.clientX, sy: e.clientY, base: new Set(sel) }; return; }
   mode = { type: 'pan', sx: e.clientX, sy: e.clientY, vx: view.x, vy: view.y, moved: false }; $vp.classList.add('panning');
@@ -668,6 +731,7 @@ addEventListener('pointermove', (e) => {
     const dx = e.clientX - mode.sx, dy = e.clientY - mode.sy; if (Math.hypot(dx, dy) > 3) mode.moved = true;
     view.x = mode.vx + dx; view.y = mode.vy + dy; applyView();
   } else if (mode.type === 'drag') {
+    if (ro) return;
     const dx = (e.clientX - mode.sx) / view.z, dy = (e.clientY - mode.sy) / view.z;
     if (!mode.moved && Math.hypot(dx, dy) * view.z < 3) return;
     if (!mode.moved) { mode.moved = true; mode.orig.forEach((_, i) => rt.get(i).el.classList.add('drag')); }
@@ -827,7 +891,7 @@ $('#add').onclick = () => { const p = toWorld(W / 2 + (Math.random() - .5) * 120
 $('#arr').onclick = () => { arrange(false); reindex(); commit(); setTimeout(fit, 700); };
 $('#fit').onclick = fit;
 $('#lstyle').onclick = (e) => { e.stopPropagation(); const r = e.currentTarget.getBoundingClientRect(); sel = new Set(); render(); openLinkMenu(null, r.left + r.width / 2, r.top, true); };
-$('#conn').onclick = () => { setConn(CONN_ORDER[(CONN_ORDER.indexOf(conn) + 1) % CONN_ORDER.length]); saveSoon(); };
+$('#conn').onclick = () => { setConn(CONN_ORDER[(CONN_ORDER.indexOf(conn) + 1) % CONN_ORDER.length]); saveSoon(); cloudDirty(); };
 $('#undo').onclick = undo; $('#redo').onclick = redo;
 document.querySelectorAll('.bgb').forEach((b) => b.onclick = () => { bg = b.dataset.bg; applyBg(); saveSoon(); });
 $('#helpb').onclick = (e) => { e.stopPropagation(); const h = $('#help'); h.style.display = h.style.display === 'block' ? 'none' : 'block'; };
@@ -844,6 +908,271 @@ $('#fileJson').onchange = (e) => {
     catch (err) { alert('Файлът не е валидна органиграма.'); }
   });
 };
+
+/* ---------- облак: вход, мои органиграми, споделяне, автозапис ---------- */
+let cloud = false, me = null, cur = null, ro = false;
+let dirty = false, saving = false, again = false, saveTimer = 0, blocked = false, pollT = 0;
+const $screen = $('#screen'), $modal = $('#modal');
+const ROLE_BG = { owner: 'Собственик', editor: 'Редактор', viewer: 'Само четене' };
+const fmtDate = (d) => new Date(d).toLocaleString('bg-BG', { dateStyle: 'medium', timeStyle: 'short' });
+const h = (tag, props, ...kids) => {
+  const n = document.createElement(tag);
+  for (const k in props || {}) {
+    const v = props[k];
+    if (k.startsWith('on')) n.addEventListener(k.slice(2), v);
+    else if (v !== undefined && v !== null && v !== false) n.setAttribute(k, v === true ? '' : v);
+  }
+  for (const c of kids.flat()) if (c != null && c !== false) n.append(c.nodeType ? c : document.createTextNode(c));
+  return n;
+};
+const logo = () => h('img', { class: 'logo', src: $('#brand img').src, alt: 'BTL' });
+let toastT = 0;
+function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 3400); }
+
+async function api(method, url, body) {
+  const r = await fetch(url, { method, credentials: 'same-origin', headers: body !== undefined ? { 'content-type': 'application/json' } : {}, body: body !== undefined ? JSON.stringify(body) : undefined });
+  let j = {}; try { j = await r.json(); } catch (e) {}
+  if (!r.ok) {
+    const e = new Error(j.error || 'Грешка (' + r.status + ')'); e.status = r.status; e.data = j;
+    if (r.status === 401 && url !== '/api/login' && me) { me = null; showLogin('Сесията изтече. Влез отново.'); }
+    throw e;
+  }
+  return j;
+}
+function showScreen(node) { $screen.replaceChildren(node); $screen.hidden = false; }
+function hideScreen() { $screen.hidden = true; $screen.replaceChildren(); }
+function openModal(node, dismiss = true) { $modal.replaceChildren(node); $modal.hidden = false; $modal.onclick = dismiss ? (e) => { if (e.target === $modal) closeModal(); } : null; }
+function closeModal() { $modal.hidden = true; $modal.replaceChildren(); }
+const closeBtn = () => h('button', { class: 'close', 'aria-label': 'Затвори', onclick: closeModal }, '✕');
+
+/* ----- лента горе в органиграмата ----- */
+function setTop(on) {
+  const t = $('#top'); t.style.display = on && cur ? 'flex' : 'none';
+  if (!on || !cur) return;
+  $('#ctitle').textContent = cur.title; $('#ctitle').disabled = ro;
+  $('#share').style.display = cur.role === 'owner' ? '' : 'none';
+}
+function setState(text, k) { const s = $('#saveState'); s.textContent = text; s.dataset.k = k || ''; }
+
+/* ----- автозапис ----- */
+function cloudDirty() {
+  if (!cloud || !cur || ro || blocked) return;
+  dirty = true; setState('Не е запазено…', 'wait');
+  clearTimeout(saveTimer); saveTimer = setTimeout(() => pushSave(false), 900);
+}
+async function pushSave(force) {
+  if (!cur || ro) return;
+  if (saving) { again = true; return; }
+  clearTimeout(saveTimer); saving = true; dirty = false; setState('Запазване…', 'wait');
+  const id = cur.id;
+  try {
+    const r = await api('PUT', '/api/charts/' + id, { data: { S, conn }, baseRev: cur.rev, force: !!force });
+    if (cur && cur.id === id) { cur.rev = r.rev; setState(dirty ? 'Не е запазено…' : 'Запазено', dirty ? 'wait' : 'ok'); }
+  } catch (e) {
+    dirty = true;
+    if (e.status === 409) conflict(e.data); else if (e.status !== 401) setState('Грешка при запис', 'err');
+  }
+  saving = false;
+  if (again) { again = false; if (!blocked) pushSave(false); }
+}
+async function flushSave() {
+  clearTimeout(saveTimer);
+  if (dirty && !blocked) await pushSave(false);
+  while (saving) await new Promise((r) => setTimeout(r, 50));
+}
+function conflict(d) {
+  blocked = true; setState('Конфликт', 'err');
+  openModal(h('div', { class: 'card modal' }, h('h2', {}, 'Има по-нова версия'),
+    h('p', {}, `${d.updatedBy || 'Друг колега'} е запазил промени, докато редактираше. Какво да направя?`),
+    h('div', { class: 'frow' },
+      h('button', { class: 'btn primary', onclick: async () => { closeModal(); blocked = false; dirty = false; try { applyChart(await api('GET', '/api/charts/' + cur.id), false); setState('Заредена е новата версия', 'ok'); } catch (e) { toast(e.message); } } }, 'Зареди новата'),
+      h('button', { class: 'btn', onclick: () => { closeModal(); blocked = false; cur.rev = d.rev; pushSave(true); } }, 'Запази моята (презапиши)'))), false);
+}
+addEventListener('beforeunload', (e) => { if (cloud && cur && (dirty || saving)) { e.preventDefault(); e.returnValue = ''; } });
+
+/* ----- отваряне и затваряне на органиграма ----- */
+function applyChart(c, doFit) {
+  cur = { id: c.id, title: c.title, owner: c.owner, role: c.role, rev: c.rev, shares: c.shares || {} };
+  ro = c.role === 'viewer'; document.body.classList.toggle('ro', ro);
+  S = c.data.S; S.cfg = S.cfg || { color: null, glow: 0.35 }; conn = c.data.conn || 'elbow'; setConn(conn);
+  sel = new Set(); selLink = null; closeLinkMenu(); reindex();
+  for (const [id, r] of rt) { const n = nodeById(id); if (n) { r.s = hid.has(id) ? 0 : 1; r.lcx = n.x; r.ang = r.angv = 0; r.ox = r.oy = 0; } }
+  hist = [snap()]; hpos = 0; updateButtons(); setTop(true);
+  if (doFit) fit();
+}
+async function openChart(id) {
+  try {
+    const c = await api('GET', '/api/charts/' + id);
+    dirty = false; blocked = false; applyChart(c, true); hideScreen(); closeModal();
+    setState(ro ? '' : 'Запазено', 'ok'); history.replaceState(null, '', '#/c/' + id); startPoll();
+  } catch (e) { if (e.status !== 401) { toast(e.status === 404 ? 'Органиграмата не е намерена или нямаш достъп.' : e.message); showDashboard(); } }
+}
+async function closeChart() {
+  await flushSave(); stopPoll(); showDashboard();
+}
+function startPoll() {   // колегите виждат промените на другите, когато няма какво да се губи
+  stopPoll();
+  pollT = setInterval(async () => {
+    if (!cur || dirty || saving || blocked || mode || editing || document.hidden) return;
+    try {
+      const c = await api('GET', '/api/charts/' + cur.id);
+      if (cur && c.id === cur.id && c.rev > cur.rev && !dirty && !saving) { applyChart(c, false); setState('Обновено от ' + (c.updatedBy || 'колега'), 'ok'); }
+    } catch (e) { if (e.status === 404) { toast('Достъпът до органиграмата е премахнат.'); closeChart(); } }
+  }, 15000);
+}
+const stopPoll = () => clearInterval(pollT);
+
+/* ----- вход ----- */
+function showSetup() {
+  const err = h('p', { class: 'err', role: 'alert' }, '');
+  const em = h('input', { class: 'fld', type: 'email', placeholder: 'Имейл на администратора', required: true });
+  const pw = h('input', { class: 'fld', type: 'password', placeholder: 'Парола (поне 8 символа)', autocomplete: 'new-password', required: true, minlength: 8 });
+  const code = h('input', { class: 'fld', type: 'password', placeholder: 'Код за настройка (SETUP_TOKEN)', required: true });
+  const btn = h('button', { class: 'btn primary', type: 'submit' }, 'Създай администратор');
+  showScreen(h('div', { class: 'center' }, h('form', { class: 'card login', onsubmit: async (e) => {
+    e.preventDefault(); btn.disabled = true; err.textContent = '';
+    try { await api('POST', '/api/setup', { email: em.value, password: pw.value, token: code.value }); history.replaceState(null, '', location.pathname); showLogin(); toast('Администраторът е създаден. Влез.'); }
+    catch (x) { err.textContent = x.message; btn.disabled = false; }
+  } }, logo(), h('h2', {}, 'Първоначална настройка'), h('p', { class: 'hint' }, 'Прави се само веднъж, когато още няма нито един потребител.'), em, pw, code, btn, err)));
+  em.focus();
+}
+function showLogin(msg) {
+  if (location.hash === '#setup') return showSetup();
+  cur = null; stopPoll(); setTop(false); closeModal();
+  const err = h('p', { class: 'err', role: 'alert' }, msg || '');
+  const em = h('input', { class: 'fld', type: 'email', placeholder: 'Имейл', autocomplete: 'username', required: true });
+  const pw = h('input', { class: 'fld', type: 'password', placeholder: 'Парола', autocomplete: 'current-password', required: true });
+  const btn = h('button', { class: 'btn primary', type: 'submit' }, 'Вход');
+  const form = h('form', { class: 'card login', onsubmit: async (e) => {
+    e.preventDefault(); btn.disabled = true; err.textContent = '';
+    try { await api('POST', '/api/login', { email: em.value, password: pw.value }); me = await api('GET', '/api/me'); await afterLogin(); }
+    catch (x) { err.textContent = x.message; btn.disabled = false; }
+  } }, logo(), h('h2', {}, 'Вход'), em, pw, btn, err, h('p', { class: 'hint' }, 'Нямаш акаунт? Поискай го от администратора.'));
+  showScreen(h('div', { class: 'center' }, form)); em.focus();
+}
+async function afterLogin() {
+  const m = location.hash.match(/^#\/c\/([a-z0-9]+)$/);
+  if (m) await openChart(m[1]); else await showDashboard();
+}
+async function logoutNow() {
+  await flushSave(); try { await api('POST', '/api/logout'); } catch (e) {}
+  me = null; history.replaceState(null, '', location.pathname); S = { nodes: [], edges: [], collapsed: [], cfg: { color: null, glow: 0.35 } }; reindex(); showLogin();
+}
+
+/* ----- мои органиграми ----- */
+const blankData = () => ({ S: { nodes: [{ id: 'n1', x: 0, y: 0, title: 'Управление', name: '', note: '', color: COLORS[0], icon: '', photo: '' }], edges: [], collapsed: [], cfg: { color: null, glow: 0.35 } }, conn: 'elbow' });
+async function createFrom(title, data) {
+  try { const r = await api('POST', '/api/charts', { title, data }); await openChart(r.id); } catch (e) { toast(e.message); }
+}
+async function showDashboard() {
+  stopPoll(); cur = null; ro = false; document.body.classList.remove('ro'); setTop(false);
+  if (location.hash) history.replaceState(null, '', location.pathname + location.search);
+  const body = h('div', {}, h('p', { class: 'hint' }, 'Зареждане…'));
+  showScreen(h('div', { class: 'dash' }, h('header', {}, logo(), h('h1', {}, 'Органиграми'), h('span', { class: 'sp' }), h('span', { class: 'who' }, me.email),
+    me.isAdmin && h('button', { class: 'btn', onclick: showAdmin }, 'Потребители'), h('button', { class: 'btn', onclick: logoutNow }, 'Изход')), body));
+  try { drawDash(body, (await api('GET', '/api/charts')).charts); } catch (e) { if (e.status !== 401) body.replaceChildren(h('p', { class: 'err' }, e.message)); }
+}
+function drawDash(body, charts) {
+  const local = (() => { try { const d = JSON.parse(localStorage.getItem(KEY)); return d && d.S && d.S.nodes && d.S.nodes.length ? d : null; } catch (e) { return null; } })();
+  const card = (c) => {
+    const mine = c.role === 'owner', stop = (fn) => (e) => { e.stopPropagation(); fn(); };
+    return h('article', { class: 'ccard', tabindex: 0, onclick: () => openChart(c.id), onkeydown: (e) => { if (e.key === 'Enter') openChart(c.id); } },
+      h('h4', {}, c.title),
+      mine ? h('p', { class: 'meta' }, c.sharedWith ? `Споделена с ${c.sharedWith} ${c.sharedWith === 1 ? 'човек' : 'души'}` : 'Само за теб') : h('p', { class: 'meta' }, 'От ' + c.owner),
+      h('p', { class: 'meta' }, 'Променена: ' + fmtDate(c.updatedAt)),
+      mine ? h('div', { class: 'cact' },
+        h('button', { onclick: stop(async () => { const t = prompt('Ново име:', c.title); if (t && t.trim()) { try { await api('PUT', '/api/charts/' + c.id, { title: t, baseRev: (await api('GET', '/api/charts/' + c.id)).rev }); showDashboard(); } catch (e) { toast(e.message); } } }) }, 'Преименувай'),
+        h('button', { class: 'del', onclick: stop(async () => { if (confirm(`Да изтрия ли „${c.title}“? Това не може да се върне.`)) { try { await api('DELETE', '/api/charts/' + c.id); showDashboard(); } catch (e) { toast(e.message); } } }) }, 'Изтрий'))
+      : h('div', { class: 'cact' }, h('span', { class: 'pill' }, ROLE_BG[c.role]),
+        h('button', { onclick: stop(async () => { if (confirm('Да напусна ли тази органиграма?')) { try { await api('DELETE', `/api/charts/${c.id}/shares`, { email: me.email }); showDashboard(); } catch (e) { toast(e.message); } } }) }, 'Напусни')));
+  };
+  const mine = charts.filter((c) => c.role === 'owner'), shared = charts.filter((c) => c.role !== 'owner');
+  body.replaceChildren(
+    h('div', { class: 'dtools' },
+      h('button', { class: 'btn primary', onclick: () => { const t = prompt('Име на органиграмата:', 'Нова органиграма'); if (t !== null) createFrom(t, blankData()); } }, '+ Нова'),
+      h('button', { class: 'btn', onclick: () => { demo(); reindex(); arrange(true); reindex(); createFrom('Примерна органиграма', JSON.parse(JSON.stringify({ S, conn: 'elbow' }))); } }, 'От пример'),
+      local && h('button', { class: 'btn', title: 'Взима органиграмата, запазена в този браузър', onclick: () => createFrom('От този браузър', { S: local.S, conn: local.conn }) }, 'Импортирай от браузъра')),
+    h('h3', {}, 'Мои'), mine.length ? h('div', { class: 'grid' }, mine.map(card)) : h('p', { class: 'hint' }, 'Още нямаш органиграми. Създай първата с „+ Нова“.'),
+    h('h3', {}, 'Споделени с мен'), shared.length ? h('div', { class: 'grid' }, shared.map(card)) : h('p', { class: 'hint' }, 'Никой още не е споделил органиграма с теб.'));
+}
+
+/* ----- споделяне ----- */
+const roleSelect = (value, onchange) => {
+  const s = h('select', { class: 'fld', 'aria-label': 'Роля' }, h('option', { value: 'viewer' }, 'Само четене'), h('option', { value: 'editor' }, 'Редактор'));
+  s.value = value; s.addEventListener('change', () => onchange(s.value)); return s;
+};
+function showShare() {
+  if (!cur || cur.role !== 'owner') return;
+  const list = h('div', { class: 'plist' }), act = async (method, body) => { try { draw((await api(method, `/api/charts/${cur.id}/shares`, body)).shares); } catch (e) { toast(e.message); } };
+  const draw = (shares) => {
+    cur.shares = shares; const rows = Object.entries(shares);
+    list.replaceChildren(...(rows.length ? rows.map(([email, role]) => h('div', { class: 'prow' }, h('span', { class: 'pem' }, email),
+      roleSelect(role, (v) => act('POST', { email, role: v })), h('button', { class: 'x', title: 'Премахни достъпа', 'aria-label': 'Премахни достъпа на ' + email, onclick: () => act('DELETE', { email }) }, '✕')))
+      : [h('p', { class: 'hint' }, 'Още не е споделена с никого.')]));
+  };
+  const em = h('input', { class: 'fld', type: 'email', placeholder: 'Имейл на колега', required: true }), rs = roleSelect('viewer', () => {});
+  const form = h('form', { class: 'frow', onsubmit: async (e) => { e.preventDefault(); await act('POST', { email: em.value, role: rs.value }); em.value = ''; } }, em, rs, h('button', { class: 'btn primary', type: 'submit' }, 'Добави'));
+  draw(cur.shares);
+  openModal(h('div', { class: 'card modal' }, closeBtn(), h('h2', {}, 'Споделяне'), h('p', { class: 'hint' }, cur.title), form, list,
+    h('div', { class: 'frow' }, h('button', { class: 'btn', onclick: async () => { try { await navigator.clipboard.writeText(location.origin + location.pathname + '#/c/' + cur.id); toast('Връзката е копирана.'); } catch (e) { toast('Не можах да копирам.'); } } }, 'Копирай връзка')),
+    h('p', { class: 'hint' }, 'Връзката работи само за хора с акаунт и достъп. Акаунти създава администраторът.')));
+  em.focus();
+}
+
+/* ----- потребители (администратор) ----- */
+async function showAdmin() {
+  const list = h('div', { class: 'plist' }, h('p', { class: 'hint' }, 'Зареждане…')), msg = h('p', { class: 'hint' }, '');
+  const load = async () => {
+    try {
+      const { users } = await api('GET', '/api/admin/users');
+      list.replaceChildren(...users.map((u) => h('div', { class: 'prow' }, h('span', { class: 'pem', title: u.lastSignInAt ? 'Последен вход: ' + fmtDate(u.lastSignInAt) : 'Още не е влизал' }, u.email),
+        h('button', { class: 'btn', onclick: async () => { const p = prompt('Нова парола за ' + u.email + ' (поне 8 символа):'); if (p) { try { await api('PUT', '/api/admin/users/' + u.id, { password: p }); msg.textContent = 'Паролата на ' + u.email + ' е сменена.'; } catch (e) { toast(e.message); } } } }, 'Парола'),
+        u.email === me.email ? null : h('button', { class: 'x', title: 'Изтрий акаунта', 'aria-label': 'Изтрий ' + u.email, onclick: async () => { if (confirm('Да изтрия ли акаунта на ' + u.email + '?')) { try { await api('DELETE', '/api/admin/users/' + u.id); load(); } catch (e) { toast(e.message); } } } }, '✕'))));
+    } catch (e) { list.replaceChildren(h('p', { class: 'err' }, e.message)); }
+  };
+  const em = h('input', { class: 'fld', type: 'email', placeholder: 'Имейл', required: true });
+  const gen = () => Array.from(crypto.getRandomValues(new Uint8Array(12)), (b) => 'abcdefghjkmnpqrstuvwxyz23456789'[b % 31]).join('');
+  const pw = h('input', { class: 'fld', type: 'text', placeholder: 'Парола (поне 8)', value: gen(), required: true, minlength: 8 });
+  const form = h('form', { class: 'frow', onsubmit: async (e) => {
+    e.preventDefault();
+    try { const u = await api('POST', '/api/admin/users', { email: em.value, password: pw.value }); msg.textContent = `Създаден: ${u.email} · парола: ${pw.value} — предай ги на колегата.`; em.value = ''; pw.value = gen(); load(); }
+    catch (x) { toast(x.message); }
+  } }, em, pw, h('button', { class: 'btn primary', type: 'submit' }, 'Създай'));
+  openModal(h('div', { class: 'card modal' }, closeBtn(), h('h2', {}, 'Потребители'), form, msg, list));
+  load();
+}
+
+/* ----- бутони в лентата ----- */
+$('#back').onclick = closeChart;
+$('#share').onclick = showShare;
+$('#ctitle').onclick = async () => {
+  if (!cur || ro) return;
+  const t = prompt('Име на органиграмата:', cur.title); if (!t || !t.trim() || t.trim() === cur.title) return;
+  await flushSave();
+  try { const r = await api('PUT', '/api/charts/' + cur.id, { title: t, baseRev: cur.rev }); cur.rev = r.rev; cur.title = t.trim().slice(0, 120); setTop(true); }
+  catch (e) { if (e.status === 409) conflict(e.data); else toast(e.message); }
+};
+addEventListener('hashchange', () => {
+  if (!cloud || !me) return;
+  const m = location.hash.match(/^#\/c\/([a-z0-9]+)$/);
+  if (m && (!cur || cur.id !== m[1])) openChart(m[1]); else if (!m && cur) closeChart();
+});
+
+async function startCloud(first) {
+  cloud = true; me = first.user;
+  try { const p = JSON.parse(localStorage.getItem('orgchart.prefs')); if (p && ['void', 'light', 'white', 'night'].includes(p.bg)) bg = p.bg; } catch (e) {}
+  S = { nodes: [], edges: [], collapsed: [], cfg: { color: null, glow: 0.35 } };
+  initParts(); setConn(conn); applyBg(); reindex(); hist = [snap()]; hpos = 0; updateButtons();
+  requestAnimationFrame((t) => { last = t; frame(t); });
+  if (!me) showLogin(); else await afterLogin();
+}
+async function detectCloud() {   // има ли сървър с /api? (при отворен файл или статичен хост – няма)
+  try {
+    const r = await fetch('/api/me', { credentials: 'same-origin', headers: { accept: 'application/json' } });
+    if (!(r.headers.get('content-type') || '').includes('json')) return null;
+    return { user: r.ok ? await r.json() : null };
+  } catch (e) { return null; }
+}
 
 /* ---------- старт ---------- */
 function demo() {
@@ -865,6 +1194,7 @@ function demo() {
     collapsed: [], cfg: { color: null, glow: 0.35 },
   };
 }
+function startLocal() {
 let loaded = false;
 try { const d = JSON.parse(localStorage.getItem(KEY)); if (d && d.S && d.S.nodes.length) { S = d.S; view = d.view || view; bg = ['void','light','white','night'].includes(d.bg) ? d.bg : bg; conn = CONN_NAMES[d.conn] ? d.conn : d.conn === 'line' ? 'curve' : 'elbow'; loaded = true; } } catch (e) {}
 if (!loaded) demo();
@@ -877,6 +1207,8 @@ else applyView();
 for (const [id, r] of rt) { const n = nodeById(id); r.s = hid.has(id) ? 0 : 1; r.lcx = n.x; }
 hist = [snap()]; hpos = 0; updateButtons();
 requestAnimationFrame((t) => { last = t; frame(t); });
+}
+detectCloud().then((c) => (c ? startCloud(c) : startLocal()));
 })();
 </script>
 </body>

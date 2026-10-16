@@ -25,6 +25,7 @@ export async function route(req, deps) {
       await core.loginOk(deps.store, e);
       return json(200, { ok: true });
     }
+    if (path === '/setup' && m === 'POST') return json(200, await core.setupFirstAdmin(deps.idp, deps.adminEmails, deps.setupToken, await body()));
     if (path === '/logout' && m === 'POST') { await deps.logout(req); return json(200, { ok: true }); }
 
     const user = await deps.getUser(req);

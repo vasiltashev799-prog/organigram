@@ -151,3 +151,16 @@ test('администрация: само за админ', async () => {
   assert.equal((await call('bob@x.bg', 'GET', '/me')).status, 401);                                                // изтрит
   assert.equal((await call('ana@x.bg', 'GET', '/me')).body.isAdmin, true);
 });
+
+test('първоначална настройка: само с код, само за админ имейл, само веднъж', async () => {
+  const { call, deps } = world(); deps.setupToken = 'tajen-kod';
+  deps.idp.listUsers = async () => [];
+  assert.equal((await call(null, 'POST', '/setup', { email: 'ana@x.bg', password: '12345678', token: 'грешен' })).status, 403);
+  assert.equal((await call(null, 'POST', '/setup', { email: 'bob@x.bg', password: '12345678', token: 'tajen-kod' })).status, 403);   // не е админ
+  assert.equal((await call(null, 'POST', '/setup', { email: 'ana@x.bg', password: 'къс', token: 'tajen-kod' })).status, 400);
+  assert.equal((await call(null, 'POST', '/setup', { email: 'ana@x.bg', password: '12345678', token: 'tajen-kod' })).status, 200);
+  deps.idp.listUsers = async () => [{ id: '1', email: 'ana@x.bg' }];
+  assert.equal((await call(null, 'POST', '/setup', { email: 'ana@x.bg', password: '12345678', token: 'tajen-kod' })).status, 409);     // вече има потребители
+  deps.setupToken = '';
+  assert.equal((await call(null, 'POST', '/setup', { email: 'ana@x.bg', password: '12345678', token: '' })).status, 403);               // без зададен код е изключено
+});

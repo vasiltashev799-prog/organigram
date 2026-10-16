@@ -9,6 +9,7 @@ export default async (req) => route(req, {
   store: blobsStore(getStore({ name: 'organigram', consistency: 'strong' })),
   idp: admin,
   adminEmails: parseAdmins(process.env.ADMIN_EMAILS),
+  setupToken: process.env.SETUP_TOKEN,
   getUser: () => getUser(),
   login: (email, password) => login(email, password),
   logout: () => logout(),
