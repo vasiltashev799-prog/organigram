@@ -2,7 +2,7 @@
 <html lang="bg">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
 <title>Органиграма</title>
@@ -58,11 +58,11 @@ body[data-bg=night] #brand img { filter: brightness(0) invert(1); }
 .editing .f { border-radius: 6px; box-shadow: 0 0 0 1px var(--edge); padding: 1px 4px; margin-left: -4px; margin-right: -4px; }
 .editing .f:focus { box-shadow: 0 0 0 2px var(--accent); }
 
-.port { position: absolute; width: 14px; height: 14px; border-radius: 50%; cursor: crosshair; z-index: 2;
+.port { --pm: 1; transform: scale(calc(var(--zi, 1) * var(--pm))); position: absolute; width: 14px; height: 14px; border-radius: 50%; cursor: crosshair; z-index: 2;
   background: #fff; border: 3px solid var(--accent); box-shadow: 0 0 10px rgba(10,108,255,.55);
   opacity: 0; transition: opacity .2s, transform .2s; }
 .node:hover .port, .node.sel .port, body.linking .port { opacity: 1; }
-.port:hover { transform: scale(1.35); background: var(--accent); }
+.port:hover { transform: scale(calc(var(--zi, 1) * var(--pm) * 1.35)); background: var(--accent); }
 .p0 { left: calc(50% - 7px); top: -7px; } .p1 { right: -7px; top: calc(50% - 7px); }
 .p2 { left: calc(50% - 7px); bottom: -7px; } .p3 { left: -7px; top: calc(50% - 7px); }
 
@@ -186,6 +186,33 @@ body.ro #add, body.ro #edit, body.ro #arr, body.ro #undo, body.ro #redo, body.ro
 #pmenu input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--accent); }
 #toast { position: fixed; left: 50%; bottom: 96px; transform: translate(-50%, 20px); z-index: 50; background: #0a1a33; color: #fff; padding: 11px 18px; border-radius: 14px; font-size: 14px; opacity: 0; pointer-events: none; transition: opacity .3s, transform .3s; max-width: calc(100% - 32px); }
 #toast.on { opacity: 1; transform: translate(-50%, 0); }
+
+/* ---------- телефон и докосване ---------- */
+#bar { bottom: calc(20px + env(safe-area-inset-bottom)); }
+#bar > * { flex: none; }
+.editing .f { user-select: text; -webkit-user-select: text; }
+@media (max-width: 720px) {
+  .port { --pm: 1.8; }
+  #nbar { flex-wrap: wrap; justify-content: center; max-width: calc(100vw - 16px); width: max-content; }
+  #brand { left: 14px; top: 14px; } #brand span, #brand i { display: none; }
+  #bar { left: 8px; right: 8px; bottom: calc(10px + env(safe-area-inset-bottom)); transform: none; max-width: none; padding: 5px; gap: 2px; justify-content: flex-start; -webkit-overflow-scrolling: touch; }
+  #bar button, .tbtn { height: 38px; min-width: 38px; padding: 0 11px; font-size: 11px; letter-spacing: .05em; }
+  #bar button.primary { padding: 0 16px; }
+  #bar .bgb { width: 26px; height: 26px; min-width: 26px; }
+  #top { left: 8px; right: 8px; top: 52px; max-width: none; justify-content: space-between; flex-wrap: wrap; gap: 2px; }
+  #top .tbtn { height: 32px; padding: 0 9px; } #ctitle { max-width: 36vw; }
+  .fld, select.fld { font-size: 16px; }
+  .dash { padding: 14px 14px 40px; } .dash h1 { font-size: 20px; } .dash header { gap: 10px; }
+  .card { padding: 22px; border-radius: 20px; }
+  #rmenu { width: min(236px, calc(100vw - 16px)); }
+  #help { width: calc(100% - 16px); bottom: 74px; }
+  #toast { bottom: calc(80px + env(safe-area-inset-bottom)); }
+}
+@media (pointer: coarse) {
+  .port { --pm: 1.8; }
+  .node:not(.sel) .port { opacity: 0; } .node.sel .port, body.linking .port { opacity: 1; }
+  .cact button { height: 36px; } .prow .x { width: 38px; height: 38px; } #nbar .tbtn { height: 38px; }
+}
 </style>
 </head>
 <body data-bg="light">
@@ -354,6 +381,7 @@ addEventListener('pointerleave', () => { mouse.x = mouse.y = -999; });
 addEventListener('resize', initParts);
 function applyView() {
   $world.style.transform = `translate(${view.x}px,${view.y}px) scale(${view.z})`;
+  $world.style.setProperty('--zi', clamp(1 / view.z, 1, 3));
 }
 
 /* ---------- индекс, DOM ---------- */
@@ -561,7 +589,8 @@ function placeBar() {
     const id = [...sel][0], r = rt.get(id);
     if (r && r.sc > 0.9) {
       $nbar.style.display = 'flex';
-      $nbar.style.left = (view.x + r.px * view.z) + 'px'; $nbar.style.top = (view.y + (r.py - 16) * view.z) + 'px';
+      const bw = $nbar.offsetWidth, bh = $nbar.offsetHeight;
+      $nbar.style.left = clamp(view.x + r.px * view.z, bw / 2 + 8, W - bw / 2 - 8) + 'px'; $nbar.style.top = Math.max(bh + 8, view.y + (r.py - 16) * view.z) + 'px';
       return;
     }
   }
@@ -656,7 +685,7 @@ function fit() {
   const vis = S.nodes.filter((n) => !hid.has(n.id)); if (!vis.length) return;
   let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
   vis.forEach((n) => { x0 = Math.min(x0, n.x - NW / 2); x1 = Math.max(x1, n.x + NW / 2); y0 = Math.min(y0, n.y - 60); y1 = Math.max(y1, n.y + 90); });
-  const z = clamp(Math.min((W - 80) / (x1 - x0), (H - 200) / (y1 - y0)), .25, 1.4);
+  const z = clamp(Math.min((W - 40) / (x1 - x0), (H - 200) / (y1 - y0)), .1, 1.4);
   view.z = z; view.x = W / 2 - (x0 + x1) / 2 * z; view.y = (H - 70) / 2 - (y0 + y1) / 2 * z; applyView(); saveSoon();
 }
 
@@ -685,7 +714,7 @@ $world.addEventListener('keydown', (e) => {
   if (e.key === 'Enter' && !e.shiftKey && f.dataset.f !== 'note') { e.preventDefault(); const next = f.dataset.f === 'title' ? 'name' : 'note'; rt.get(editing).el.querySelector('[data-f=' + next + ']').focus(); }
 });
 $vp.addEventListener('dblclick', (e) => {
-  if (ro) return;
+  if (ro || performance.now() - noDbl < 700) return;
   if (e.target.closest('.node')) return;
   const p = toWorld(e.clientX, e.clientY); addNode(p.x, p.y - 40, true);
 });
@@ -715,8 +744,28 @@ function openLinkMenu(eid, x, y, above) {
   m.style.left = clamp(x - (above ? m.offsetWidth / 2 : -8), 8, W - m.offsetWidth - 8) + 'px';
   m.style.top = clamp(above ? y - m.offsetHeight - 10 : y + 8, 8, H - m.offsetHeight - 8) + 'px';
 }
+const touches = new Map();
+let lastTap = { t: 0, x: 0, y: 0 }, noDbl = 0;
+function startPinch() {
+  if (mode && mode.type === 'drag' && mode.moved) commit();
+  if (mode && mode.type === 'link') { link = null; document.body.classList.remove('linking'); }
+  document.querySelectorAll('.node.target,.node.drag').forEach((n) => n.classList.remove('target', 'drag'));
+  $mq.style.display = 'none'; $vp.classList.remove('panning');
+  const [a, b] = [...touches.values()], cx = (a.x + b.x) / 2, cy = (a.y + b.y) / 2;
+  mode = { type: 'pinch', d0: Math.hypot(a.x - b.x, a.y - b.y) || 1, z0: view.z, wx: (cx - view.x) / view.z, wy: (cy - view.y) / view.z };
+}
+function tapAdd(e) {
+  const now = performance.now();
+  if (now - lastTap.t < 380 && Math.hypot(e.clientX - lastTap.x, e.clientY - lastTap.y) < 32) { lastTap.t = 0; noDbl = now; const p = toWorld(e.clientX, e.clientY); addNode(p.x, p.y - 40, true); }
+  else lastTap = { t: now, x: e.clientX, y: e.clientY };
+}
 $vp.addEventListener('pointerdown', (e) => {
   if (e.button > 1) return;
+  if (e.pointerType === 'touch') {
+    touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (touches.size === 2) { startPinch(); return; }
+    if (touches.size > 2) return;
+  }
   const t = e.target;
   if (t.closest('.editing .f')) return;
   const wasEditing = editing;
@@ -746,8 +795,13 @@ $vp.addEventListener('pointerdown', (e) => {
   mode = { type: 'pan', sx: e.clientX, sy: e.clientY, vx: view.x, vy: view.y, moved: false }; $vp.classList.add('panning');
 });
 addEventListener('pointermove', (e) => {
+  if (e.pointerType === 'touch' && touches.has(e.pointerId)) touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
   if (!mode) return;
-  if (mode.type === 'pan') {
+  if (mode.type === 'pinch') {
+    if (touches.size < 2) return;
+    const [a, b] = [...touches.values()], cx = (a.x + b.x) / 2, cy = (a.y + b.y) / 2;
+    view.z = clamp(mode.z0 * Math.hypot(a.x - b.x, a.y - b.y) / mode.d0, .1, 2.6); view.x = cx - mode.wx * view.z; view.y = cy - mode.wy * view.z; applyView();
+  } else if (mode.type === 'pan') {
     const dx = e.clientX - mode.sx, dy = e.clientY - mode.sy; if (Math.hypot(dx, dy) > 3) mode.moved = true;
     view.x = mode.vx + dx; view.y = mode.vy + dy; applyView();
   } else if (mode.type === 'drag') {
@@ -774,10 +828,12 @@ addEventListener('pointermove', (e) => {
   }
 });
 addEventListener('pointerup', (e) => {
+  touches.delete(e.pointerId);
   if (!mode) return; const m = mode; mode = null;
   $vp.classList.remove('panning'); document.body.classList.remove('linking');
   document.querySelectorAll('.node.target,.node.drag').forEach((n) => n.classList.remove('target', 'drag'));
-  if (m.type === 'pan') { if (!m.moved && sel.size) { sel = new Set(); render(); } saveSoon(); }
+  if (m.type === 'pan') { if (!m.moved && sel.size) { sel = new Set(); render(); } saveSoon(); if (!m.moved && e.pointerType === 'touch' && !ro) tapAdd(e); }
+  else if (m.type === 'pinch') saveSoon();
   else if (m.type === 'drag') {
     if (m.moved) commit();
     else { if (sel.size > 1) { sel = new Set([m.id]); render(); } if (!m.wasEditing && adj.has(m.id)) toggleCollapse(m.id); }
@@ -788,9 +844,10 @@ addEventListener('pointerup', (e) => {
     if (te && te.dataset.id !== l.from) connect(l.ids, te.dataset.id, l.port, toWorld(e.clientX, e.clientY));
   } else if (m.type === 'marquee') { $mq.style.display = 'none'; updateButtons(); }
 });
+addEventListener('pointercancel', (e) => { touches.delete(e.pointerId); if (mode && mode.type === 'pinch') mode = null; });
 $vp.addEventListener('wheel', (e) => {
   e.preventDefault();
-  const nz = clamp(view.z * Math.exp(-e.deltaY * (e.ctrlKey ? 0.01 : 0.0016)), .2, 2.6), wx = (e.clientX - view.x) / view.z, wy = (e.clientY - view.y) / view.z;
+  const nz = clamp(view.z * Math.exp(-e.deltaY * (e.ctrlKey ? 0.01 : 0.0016)), .1, 2.6), wx = (e.clientX - view.x) / view.z, wy = (e.clientY - view.y) / view.z;
   view.z = nz; view.x = e.clientX - wx * nz; view.y = e.clientY - wy * nz; applyView(); saveSoon();
 }, { passive: false });
 addEventListener('keydown', (e) => {
